@@ -153,9 +153,79 @@ export function tablePrompts() {
   ];
 }
 
-/** Everything, in generation order (cheap/high-impact first). */
-export function allPrompts() {
-  return [...tablePrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts()];
+/**
+ * App icons for the installable build (PWA / Play Store).
+ * Square, and deliberately simple: an icon is read at 48px on a home screen.
+ * The maskable variant keeps everything inside the safe circle, because
+ * Android crops icons to whatever shape the launcher uses.
+ */
+export function iconPrompts() {
+  const ICON_SUBJECT = [
+    'App icon for a cheerful solitaire card game.',
+    'A single playing card standing at a slight angle with a big smiling cartoon sun',
+    'peeking from behind it, plus one small heart and one small spade shape.',
+    'Bold, chunky, instantly readable at very small size.',
+    'Bright turquoise-to-mint background, warm coral and sunny yellow accents.',
+  ].join(' ');
+
+  return [
+    {
+      id: 'icon-source',
+      kind: 'icon',
+      size: '1024x1024',
+      prompt: [
+        ICON_SUBJECT,
+        'Fills the frame edge to edge with a small even margin. Centered composition.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+    {
+      id: 'icon-maskable-source',
+      kind: 'icon',
+      size: '1024x1024',
+      prompt: [
+        ICON_SUBJECT,
+        'IMPORTANT: keep the entire subject well inside the central circle, with a',
+        'generous solid-colour border all around, because the outer edges will be',
+        'cropped away. The background colour must extend fully to every edge.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+  ];
 }
 
-export const GROUPS = { table: tablePrompts, back: backPrompts, ace: acePrompts, court: courtPrompts, all: allPrompts };
+/**
+ * Play Store feature graphic. Google shows it at 1024x500 and crops the sides
+ * on narrow screens, so the subject must sit in the middle. It must carry no
+ * text: Google overlays the app name itself, and our prompts never ask for
+ * lettering anyway.
+ */
+export function bannerPrompts() {
+  return [
+    {
+      id: 'feature-graphic-source',
+      kind: 'banner',
+      size: '1536x1024',
+      prompt: [
+        'Wide banner artwork for a cheerful solitaire card game.',
+        'A fan of bright playing cards spread across the middle of the frame,',
+        'with a big smiling cartoon sun rising behind them, fluffy clouds and',
+        'floating sparkles. Chunky rounded shapes, glossy highlights.',
+        'Turquoise-to-mint sky with warm coral and sunny yellow accents.',
+        'Keep the main subject centred with plenty of clear background on the',
+        'left and right, because the sides will be cropped.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+  ];
+}
+
+/** Everything, in generation order (cheap/high-impact first). */
+export function allPrompts() {
+  return [...tablePrompts(), ...iconPrompts(), ...bannerPrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts()];
+}
+
+export const GROUPS = {
+  table: tablePrompts, back: backPrompts, ace: acePrompts,
+  court: courtPrompts, icon: iconPrompts, banner: bannerPrompts, all: allPrompts,
+};

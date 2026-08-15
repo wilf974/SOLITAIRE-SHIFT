@@ -181,6 +181,33 @@
       "suit": null,
       "rank": null,
       "bytes": 2705419
+    },
+    "icon-source": {
+      "file": "icon-source.png",
+      "hash": "e0f6f16b7dc08104",
+      "kind": "icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1520680
+    },
+    "icon-maskable-source": {
+      "file": "icon-maskable-source.png",
+      "hash": "093b9511a6d3917e",
+      "kind": "icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1710940
+    },
+    "feature-graphic-source": {
+      "file": "feature-graphic-source.png",
+      "hash": "fca7a87a6b599dd6",
+      "kind": "banner",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2252193
     }
   }
 }

@@ -26,6 +26,8 @@ const MIME = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.md': 'text/markdown; charset=utf-8',
+  // PWA: browsers reject a manifest served as octet-stream
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
 };
 
 const server = createServer(async (req, res) => {

@@ -1,0 +1,34 @@
+{
+  "name": "SOLITAIRE: SHIFT",
+  "short_name": "Solitaire Shift",
+  "description": "Un Klondike lumineux avec des pouvoirs, un mode Aventure, un Chrono et le mode Marée où la mer monte pendant que vous jouez.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1fc0ad",
+  "theme_color": "#1fc0ad",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "src/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "src/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "src/assets/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "src/assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Aventure",
+      "short_name": "Aventure",
+      "description": "Reprendre le mode Aventure",
+      "url": "./index.html?mode=adventure"
+    },
+    {
+      "name": "Donne du jour",
+      "short_name": "Quotidien",
+      "description": "Jouer la donne du jour",
+      "url": "./index.html?mode=daily"
+    }
+  ]
+}

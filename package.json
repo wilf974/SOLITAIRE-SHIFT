@@ -10,6 +10,7 @@
     "test:meta": "node --test tests/progression.test.js tests/serialize.test.js",
     "check": "node tools/check-syntax.js",
     "gen:art": "node tools/gen-art/generate.js",
+    "gen:icons": "node tools/make-icons.js",
     "serve": "node tools/serve.js"
   },
   "license": "UNLICENSED"
