@@ -4,7 +4,7 @@ import { defaultPowers } from './powers.js';
 import { defaultRewards } from './rewards.js';
 
 const KEY = 'solitaire-shift:profile:v1';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 export function defaultProfile() {
   return {
@@ -34,7 +34,6 @@ export function defaultProfile() {
       traitsUsed: {},
       modesPlayed: {},
     },
-    activeBack: 'sunburst-pop',
     activeTheme: 'sunlit',
     activeCourt: 'regalia',
     lastDaily: null,
@@ -106,18 +105,40 @@ function migrate(p) {
   if (!Number.isFinite(p.battle.bestCombo)) p.battle.bestCombo = 0;
 
   // v3 -> v4: boss rewards. Existing players keep whatever they had equipped.
-  if (!p.rewards || typeof p.rewards !== 'object') p.rewards = defaultRewards();
+  // v4 -> v5: `rewards` owns the equipped back. The old top-level activeBack
+  // was never written on equip, so anything still reading it reverted the
+  // player's choice on the next deal.
+  //
+  // Read the legacy value BEFORE merging defaults: the merge below fills
+  // rewards.activeBack with the default, which would mask the inherited one.
+  const legacyBack = p.activeBack;
+  delete p.activeBack;
+
+  const hadRewards = p.rewards && typeof p.rewards === 'object';
+  const defs = defaultRewards();
+  if (!hadRewards) p.rewards = defs;
   else {
-    const d = defaultRewards();
-    p.rewards = { ...d, ...p.rewards };
+    const chosen = p.rewards.activeBack;   // an explicit choice, if any
+    p.rewards = { ...defs, ...p.rewards };
+    if (!chosen && legacyBack) p.rewards.activeBack = legacyBack;
     for (const bucket of ['backs', 'tables', 'trims']) {
-      if (!Array.isArray(p.rewards[bucket])) p.rewards[bucket] = d[bucket];
+      if (!Array.isArray(p.rewards[bucket])) p.rewards[bucket] = [...defs[bucket]];
       // the starter items can never be missing
-      for (const id of d[bucket]) if (!p.rewards[bucket].includes(id)) p.rewards[bucket].push(id);
+      for (const id of defs[bucket]) if (!p.rewards[bucket].includes(id)) p.rewards[bucket].push(id);
     }
   }
-  // carry the old activeBack across, if it is still a real back
-  if (p.activeBack && !p.rewards.activeBack) p.rewards.activeBack = p.activeBack;
+  if (!hadRewards && legacyBack) p.rewards.activeBack = legacyBack;
+
+  // never leave the profile pointing at something it does not own
+  if (!p.rewards.backs.includes(p.rewards.activeBack)) {
+    p.rewards.activeBack = p.rewards.backs[0] || 'sunburst-pop';
+  }
+  if (!p.rewards.tables.includes(p.rewards.activeTable)) {
+    p.rewards.activeTable = p.rewards.tables[0] || 'sunlit';
+  }
+  if (!p.rewards.trims.includes(p.rewards.activeTrim)) {
+    p.rewards.activeTrim = p.rewards.trims[0] || 'plain';
+  }
 
   if (p.version !== SCHEMA_VERSION) p.version = SCHEMA_VERSION;
   return p;

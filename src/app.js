@@ -221,6 +221,15 @@ export class App {
     else if (id === 'time-gift') this.toast(`+${res.seconds} secondes`);
   }
 
+  /**
+   * The equipped card back. `profile.rewards` is the single source of truth:
+   * the old `profile.activeBack` was never updated on equip, so anything that
+   * read it silently reverted the player's choice on the next deal.
+   */
+  activeBack() {
+    return (this.profile.rewards && this.profile.rewards.activeBack) || 'sunburst-pop';
+  }
+
   /** Equip a cosmetic and apply it immediately. */
   equipReward(reward) {
     if (!reward) return;
@@ -239,7 +248,7 @@ export class App {
     document.documentElement.dataset.theme = this.profile.activeTheme || 'sunlit';
     if (this.profile.settings.reduceMotion) document.documentElement.classList.add('reduce-motion');
     document.documentElement.dataset.trim = rw.activeTrim || 'plain';
-    this.renderer.setBack(rw.activeBack || this.profile.activeBack || 'sunburst-pop');
+    this.renderer.setBack(this.activeBack());
     // generated table surface — the equipped felt, falling back to the default
     const table = tableArtUrl(rw.activeTable);
     const appEl = document.getElementById('app');
@@ -292,7 +301,7 @@ export class App {
       // wait a frame for layout, then measure
       await new Promise((r) => requestAnimationFrame(r));
       this.renderer.measure();
-      this.renderer.setBack(this.profile.activeBack);
+      this.renderer.setBack(this.activeBack());
       this.sync();
       this.renderBattleHud();
       if (mode === 'battle') {
@@ -326,7 +335,7 @@ export class App {
       this.deal = { seed: snap.seed, rules: snap.rules, traits: snap.traits || [], mode: this.mode };
       this.elapsedBase = snap.elapsedMs || 0;
       this.renderer.build(this.game);
-      requestAnimationFrame(() => { this.renderer.measure(); this.renderer.setBack(this.profile.activeBack); this.sync(); });
+      requestAnimationFrame(() => { this.renderer.measure(); this.renderer.setBack(this.activeBack()); this.sync(); });
       this.startTimer();
       this.toast('Partie reprise');
     } catch (e) {

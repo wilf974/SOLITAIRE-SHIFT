@@ -157,3 +157,40 @@ test('rewards are cosmetic only — no reward carries a rule', () => {
     }
   }
 });
+
+// ---------- the equipped back must survive ----------
+
+test('a profile never has two competing "active back" fields', () => {
+  // The bug: profile.activeBack was never written on equip, so any code path
+  // still reading it silently reverted the player's choice on the next deal.
+  const p = defaultProfile();
+  assert.equal('activeBack' in p, false, 'only rewards.activeBack may exist');
+  assert.ok(p.rewards.activeBack, 'rewards owns the equipped back');
+});
+
+test('an old save migrates its equipped back into rewards, once', async () => {
+  const { defaultRewards } = await import('../src/meta/rewards.js');
+  // simulate a pre-v5 save that had picked a back the old way
+  const old = { ...defaultProfile(), activeBack: 'mint-crest' };
+  old.rewards = defaultRewards();
+  old.rewards.backs.push('mint-crest');
+  delete old.rewards.activeBack;
+
+  // migrate() runs inside loadProfile; exercise it through importProfile
+  const { importProfile } = await import('../src/meta/storage.js');
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(old))));
+  const migrated = importProfile(encoded);
+
+  assert.equal(migrated.rewards.activeBack, 'mint-crest', 'choice carried over');
+  assert.equal('activeBack' in migrated, false, 'stale field removed');
+});
+
+test('a profile is never left pointing at a back it does not own', async () => {
+  const { importProfile } = await import('../src/meta/storage.js');
+  const broken = defaultProfile();
+  broken.rewards.activeBack = 'house-gold'; // never unlocked
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(broken))));
+  const fixed = importProfile(encoded);
+  assert.ok(fixed.rewards.backs.includes(fixed.rewards.activeBack),
+    'falls back to something owned');
+});
