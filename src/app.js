@@ -556,6 +556,12 @@ export class App {
 
   sync() { this.renderer.sync(this.game); this.updateHUD(); this.renderPowerBar(); }
   updateHUD() {
+    // The coin counter is part of the HUD, so refresh it here too. Leaving it
+    // to updateCoins() alone meant the pill kept showing a stale total whenever
+    // coins changed outside a finished hand.
+    const pw = this.profile.powers;
+    const coins = document.getElementById('hud-coins');
+    if (coins) coins.textContent = fmtCoins(pw.coins);
     if (!this.game) return;
     document.getElementById('hud-score').textContent = this.game.score;
     document.getElementById('hud-moves').textContent = this.game.moves;
