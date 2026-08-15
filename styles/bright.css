@@ -432,6 +432,66 @@ body.auto-finishing .power-bar { opacity: 0.5; pointer-events: none; }
   border-radius: 999px;
 }
 
+/* ---------- small screens ---------- */
+
+/* The top bar ran out of room on a phone and simply clipped the buttons off
+   the right edge. Let it shrink instead: the brand goes, the stats tighten,
+   and the icon buttons stay reachable because they are the controls. */
+@media (max-width: 720px) {
+  .topbar { gap: 4px; }
+  .topbar .brand { display: none; }
+  .topbar .hud { gap: 4px; flex: 1; justify-content: flex-end; }
+  .iconbtn { min-width: 40px; min-height: 40px; border-radius: 12px; }
+  .iconbtn svg { width: 19px; height: 19px; }
+  .coin-pill { padding: 4px 10px 4px 7px; min-height: 40px; }
+  .coin-pill .ico { font-size: 17px; }
+  .hud .stat { min-width: 0; }
+}
+
+/* Very narrow: the score/moves labels are decoration, the numbers are not. */
+@media (max-width: 480px) {
+  .hud .stat .k { display: none; }
+  .power-btn { min-width: 60px; padding: 5px 8px; }
+  .power-btn .nm { font-size: 9px; }
+  .panel { border-radius: 20px; }
+  .menu-grid { grid-template-columns: repeat(auto-fit, minmax(min(140px, 46vw), 1fr)); }
+}
+
+/* ---------- rotate prompt ----------
+   The game needs width: seven columns side by side. Android forces landscape,
+   but a browser cannot, so on a portrait phone we ask rather than render a
+   cramped, unplayable board. */
+.rotate-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 32px;
+  text-align: center;
+  background: linear-gradient(165deg, var(--sky-2) 0%, var(--sky-3) 55%, var(--felt-3) 100%);
+  color: #fff;
+}
+.rotate-hint .glyph {
+  font-size: 64px;
+  animation: rotateNudge 2.2s ease-in-out infinite;
+}
+.rotate-hint h2 { font-size: 22px; font-weight: 800; }
+.rotate-hint p { font-size: 14px; opacity: 0.9; max-width: 22em; line-height: 1.5; }
+@keyframes rotateNudge {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  70%, 90% { transform: rotate(90deg); }
+}
+
+/* Show it only on a portrait screen too small to fit the board comfortably.
+   Tablets in portrait are wide enough, so they are left alone. */
+@media (orientation: portrait) and (max-width: 600px) {
+  .rotate-hint { display: flex; }
+}
+
 /* ---------- generated card-back art ----------
    Declared here (last stylesheet) so nothing later resets background-size.
    The art draws its own rounded frame inside a small outer margin, so it is

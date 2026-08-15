@@ -37,17 +37,30 @@
   --panel-border: rgba(31, 41, 72, 0.12);
   --glass: rgba(255, 255, 255, 0.55);
 
-  /* card sizing — responsive, mobile-first.
-     The board is a 7-column grid; the card width follows the column width so
-     the table fills the screen instead of huddling in the middle. */
+  /* Card sizing — derived from the board geometry rather than guessed.
+     The board is a 7-column grid, so the available width must be divided by 7
+     AFTER subtracting the page inset and the six gutters between columns.
+     Guessing a vw fraction (the old 11.6vw) overflowed the screen on phones:
+     7 columns plus gutters came to more than 100vw and the last column fell
+     off the right edge. */
   --board-w: 1180px;
-  --card-w: clamp(44px, 11.6vw, 132px);
+  --inset: clamp(8px, 2vmin, 22px);
+  --gap: clamp(4px, 1.2vmin, 14px);
+  --board-avail: min(100vw - (2 * var(--inset)), var(--board-w));
+  --col-w: calc((var(--board-avail) - (6 * var(--gap))) / 7);
+  /* Also cap by height. A card is 1.4x tall and the screen must fit the top
+     row plus a stacked tableau column below it, so the card height is capped
+     at roughly a third of the viewport; 24vh of width ≈ 34vh of height. */
+  --card-w: min(var(--col-w), 24vh, 132px);
   --card-h: calc(var(--card-w) * 1.4);
+  /* On a short landscape screen the height cap above wins, leaving the card
+     narrower than its grid column. Scale the gutter with the card so the piles
+     stay visually grouped instead of drifting apart. */
+  --gutter: min(var(--gap), calc(var(--card-w) * 0.14));
   --radius: calc(var(--card-w) * 0.09);
   --stack-offset-up: calc(var(--card-h) * 0.30); /* face-up overlap */
   --stack-offset-dn: calc(var(--card-h) * 0.055); /* face-down overlap — tight,
      so a 7-card column doesn't stair-step off the bottom of the screen */
-  --gap: clamp(6px, 1.4vmin, 14px);
 
   --tap: 48px;
   --font-card: Georgia, "Iowan Old Style", "Times New Roman", serif;
@@ -259,13 +272,17 @@ body {
 }
 .card-layer .card { pointer-events: auto; }
 
-/* rows — one shared 7-column grid so every pile lines up */
+/* Rows — one shared 7-column grid so every pile lines up.
+   The columns are sized to the CARD, not stretched to fill: with 1fr columns
+   a wide screen spread the piles far apart and left the board looking sparse
+   and hard to scan. The whole grid is centred instead. */
 .row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: var(--gap);
+  grid-template-columns: repeat(7, var(--card-w));
+  gap: var(--gutter);
   align-items: start;
   justify-items: center;
+  justify-content: center;
 }
 /* top row order: stock(1) waste(2) spacer(3) f0(4) f1(5) f2(6) f3(7) */
 .spacer { width: 100%; }
@@ -317,13 +334,21 @@ body {
   justify-content: center;
 }
 
-/* responsive: mobile portrait compresses */
+/* Small screens: tighten the chrome, but never hard-code --card-w — the
+   geometry maths above already fits the board to whatever space exists. */
 @media (max-width: 560px) {
-  :root { --card-w: clamp(40px, 13.5vw, 64px); --gap: 5px; }
-  .row.tableau { gap: 5px; }
-  .topbar { padding: 6px 10px; }
+  :root { --gap: 4px; --inset: 6px; }
+  .topbar { padding: 4px 8px; }
+  .hud .stat .v { font-size: 14px; }
+  .hud .stat .k { font-size: 8px; }
 }
-@media (orientation: landscape) and (max-height: 480px) {
-  :root { --card-w: clamp(40px, 10vmin, 68px); }
-  .board { gap: 8px; }
+
+/* Landscape on a short screen (a phone held sideways): the board is wide but
+   very short, so height is the binding constraint. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --inset: 4px; --gap: 4px; }
+  .board { gap: 6px; }
+  .topbar { padding: 2px 8px; min-height: 40px; }
+  .help-hint { display: none; }   /* no room, and the tutorial is one-time */
+  .power-bar { min-height: 46px; padding-bottom: 4px; }
 }

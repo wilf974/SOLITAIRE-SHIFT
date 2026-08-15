@@ -56,6 +56,15 @@
       <div class="power-bar" id="power-bar"></div>
     </div>
 
+    <!-- Shown only on a portrait phone: the board needs width. Android forces
+         landscape via the manifest; a browser cannot, so we ask. -->
+    <div class="rotate-hint" id="rotate-hint">
+      <div class="glyph">📱</div>
+      <h2>Tournez votre écran</h2>
+      <p>SOLITAIRE: SHIFT se joue à l'horizontale — les sept colonnes ont besoin
+      de largeur pour rester lisibles.</p>
+    </div>
+
     <!-- modal root -->
     <div id="modal-root"></div>
     <div id="toast"></div>
