@@ -193,11 +193,13 @@ export class Controller {
     if (name.startsWith('f')) {
       if (from.kind === 'tableau') return { type: 'tab-to-foundation', from: from.col };
       if (from.kind === 'waste') return { type: 'waste-to-foundation' };
+      if (from.kind === 'reserve') return { type: 'reserve-to-foundation' };
     }
     if (name.startsWith('t')) {
       const to = parseInt(name.slice(1));
       if (from.kind === 'tableau') return { type: 'tab-to-tab', from: from.col, to, count: d.run.length };
       if (from.kind === 'waste') return { type: 'waste-to-tab', to };
+      if (from.kind === 'reserve') return { type: 'reserve-to-tab', to };
     }
     return null;
   }
@@ -207,6 +209,8 @@ export class Controller {
     const id = d.ids[0];
     const game = this.ctx.game();
     if (!game) return;
+    // Réserve power armed: this tap stores the card instead of moving it
+    if (this.ctx.tryReserve && this.ctx.tryReserve(id)) return;
     // double-tap → send to foundation
     const now = performance.now();
     if (this.lastTap.id === id && now - this.lastTap.t < 320) {
@@ -234,6 +238,12 @@ export class Controller {
         const fi = foundationIndexFor(card);
         if (fi >= 0 && foundationFits(game.rules, card, game.foundations[fi])) move = { type: 'waste-to-foundation' };
       }
+    } else if (from.kind === 'reserve') {
+      const card = game.reserve;
+      if (card) {
+        const fi = foundationIndexFor(card);
+        if (fi >= 0 && foundationFits(game.rules, card, game.foundations[fi])) move = { type: 'reserve-to-foundation' };
+      }
     }
     if (move) this.ctx.do(move); else this.ctx.audio.invalid();
   }
@@ -256,7 +266,10 @@ export class Controller {
       case ' ':
       case 'enter': e.preventDefault(); this.ctx.onStockTap(); break;
       case 'n': this.ctx.newGame(); break;
-      case 'escape': this.ctx.menu(); break;
+      case 'escape':
+        if (this.ctx.cancelReserve) this.ctx.cancelReserve();
+        this.ctx.menu();
+        break;
     }
   }
 }

@@ -272,6 +272,137 @@
   to { transform: translateY(105vh) rotate(760deg); opacity: 0; }
 }
 
+/* ---------- power bar (bottom of the screen) ---------- */
+.power-bar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 clamp(10px, 2vw, 20px) clamp(8px, 1.6vh, 16px);
+  min-height: 60px;
+}
+/* The help hint is fixed in ui.css, which made it sit under the power bar.
+   Put it back in the flow so the two stack instead of overlapping. */
+.help-hint {
+  position: static;
+  transform: none;
+  left: auto;
+  bottom: auto;
+  text-align: center;
+  padding: 0 12px 4px;
+  z-index: 4;
+}
+.power-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 76px;
+  min-height: 58px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 3px 0 rgba(31,41,72,0.14), 0 8px 18px rgba(31,41,72,0.16);
+  transition: transform 0.12s var(--pop), box-shadow 0.12s, opacity 0.15s;
+}
+.power-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 0 rgba(31,41,72,0.14), 0 12px 24px rgba(31,41,72,0.2); }
+.power-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 rgba(31,41,72,0.14); }
+.power-btn.dead { opacity: 0.45; cursor: default; }
+.power-btn .emoji { font-size: 22px; line-height: 1; }
+.power-btn .nm { font-size: 10.5px; font-weight: 800; }
+.power-btn .chg {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, #ffd76a, #ffb01f);
+  color: #6b4300;
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 5px rgba(31,41,72,0.28);
+}
+.power-add {
+  min-width: 46px;
+  min-height: 46px;
+  border: 2px dashed rgba(255,255,255,0.7);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s var(--pop), background 0.15s;
+}
+.power-add:hover { transform: translateY(-2px); background: rgba(255,255,255,0.32); }
+.power-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13.5px;
+  background: rgba(255,255,255,0.9);
+  color: var(--ink);
+  box-shadow: 0 3px 0 rgba(31,41,72,0.14), 0 8px 18px rgba(31,41,72,0.14);
+  transition: transform 0.12s var(--pop);
+}
+.power-empty:hover { transform: translateY(-2px); }
+.power-empty .emoji { font-size: 19px; }
+
+/* The Réserve slot lives in the top row's middle column. It stays invisible
+   until the power is actually in play, so it never reads as a 5th foundation. */
+.slot.reserve {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.slot.reserve::before { opacity: 0; transition: opacity 0.2s; }
+body.arming-reserve .slot.reserve::before,
+.slot.reserve.holding::before { opacity: 0.75; }
+.slot.reserve.holding {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* while the Réserve power is armed, the board invites a pick */
+body.arming-reserve .card.faceup { cursor: crosshair; }
+body.arming-reserve .slot.reserve {
+  border-color: #fff;
+  border-style: solid;
+  background: rgba(255,255,255,0.35);
+  animation: reservePulse 1s ease-in-out infinite;
+}
+@keyframes reservePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+}
+
+/* the timed-mode clock turns urgent in the last 30 seconds */
+.hud .stat .v.urgent { color: #ffe27a; animation: tick 1s steps(2) infinite; }
+@keyframes tick { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* feature modes (Aventure / Chrono / Marée) lead the menu */
+.mode-card.feature {
+  background: linear-gradient(160deg, #fff, #fff6e0);
+  box-shadow: 0 3px 0 rgba(240,138,36,0.28), 0 10px 24px rgba(240,138,36,0.20);
+}
+.mode-card.chapter.done { background: linear-gradient(160deg, #fff, #e8fbf0); }
+
 /* ---------- generated card-back art ----------
    Declared here (last stylesheet) so nothing later resets background-size.
    The art draws its own rounded frame inside a small outer margin, so it is

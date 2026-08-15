@@ -21,6 +21,11 @@ function clone(state) {
     score: 0,
     history: [],
     won: false,
+    reserve: state.reserve ? { ...state.reserve } : null,
+    // Tide is deliberately NOT simulated: a rising board has no fixed
+    // solution, so Marée deals are not solver-validated (see modes.js).
+    tideEvery: 0,
+    tideCount: 0,
   };
 }
 
@@ -34,7 +39,8 @@ function canonKey(state) {
     .join('|');
   // stock + waste: order matters for future draws; represent compactly
   const sw = state.stock.map((c) => c.rank + c.suit[0]).join('.') + '#' + state.waste.map((c) => c.rank + c.suit[0]).join('.');
-  return `${f};${t};${sw}`;
+  const rv = state.reserve ? state.reserve.rank + state.reserve.suit[0] : '';
+  return `${f};${t};${sw};${rv}`;
 }
 
 /** Heuristic ordering: prefer foundation moves, then reveals, then draws last. */

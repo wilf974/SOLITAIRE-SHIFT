@@ -72,10 +72,58 @@ export async function makeDeal(mode, opts = {}) {
       const seed = found ? found.seed : 'ascension-l' + level + '::0';
       return { mode, seed, rules: found ? found.rules : composeRules(traits), traits, objective: `Ascension · Niveau ${level}`, meta: { level } };
     }
+    case 'adventure': {
+      // A hand-authored run of chapters: each is a solver-validated deal with a
+      // named goal and its own traits. Progress is stored on the profile.
+      const idx = Math.max(0, Math.min(CHAPTERS.length - 1, opts.chapter ?? (profile.adventure?.chapter || 0)));
+      const ch = CHAPTERS[idx];
+      const found = firstSolvable(ch.baseSeed, ch.traits, difficultyTries(ch.traits), 130000);
+      const seed = found ? found.seed : ch.baseSeed + '::0';
+      return {
+        mode, seed,
+        rules: found ? found.rules : composeRules(ch.traits),
+        traits: ch.traits,
+        objective: ch.objective,
+        meta: { chapter: idx, name: ch.name, story: ch.story, last: idx === CHAPTERS.length - 1 },
+      };
+    }
+    case 'timed': {
+      // Beat the clock. Solver-validated so the pressure is the only obstacle.
+      const seconds = opts.seconds || 300;
+      const found = firstSolvable('timed-' + Date.now(), [], 20, 90000);
+      const seed = found ? found.seed : 'timed-fallback::0';
+      const rules = { ...composeRules([]), timeLimitMs: seconds * 1000 };
+      return { mode, seed, rules, traits: [], objective: `Gagnez en ${Math.round(seconds / 60)} minutes.`, meta: { seconds } };
+    }
+    case 'tide': {
+      // "Marée" — every N moves the sea rises and deals a card onto every
+      // column. Deliberately NOT solver-validated: the board changes as you
+      // play, so there is no fixed solution to validate. Survival, not proof.
+      const every = opts.tideEvery || 12;
+      const seed = 'tide-' + Math.random().toString(36).slice(2, 10);
+      const rules = { ...composeRules([]), tideEvery: every };
+      return {
+        mode, seed, rules, traits: [],
+        objective: `La marée monte tous les ${every} coups. Videz le tableau.`,
+        meta: { tideEvery: every, unvalidated: true },
+      };
+    }
     default:
       return { mode: 'classic', seed: 'classic-0', rules: composeRules([]), traits: [], objective: '', meta: {} };
   }
 }
+
+/** Adventure chapters — a curated story run. Order matters. */
+export const CHAPTERS = [
+  { name: 'Le Départ',        story: "Une table, un jeu, rien de plus. Apprenez la maison.",              traits: [],                              objective: 'Remportez la donne.',            baseSeed: 'adv-01-depart' },
+  { name: 'Trois par Trois',  story: 'La pioche devient avare. Comptez vos tirages.',                      traits: ['draw-three'],                  objective: 'Gagnez en piochant par trois.',  baseSeed: 'adv-02-troisXtrois' },
+  { name: 'Le Dernier Tour',  story: 'La pioche ne repassera pas. Chaque carte compte double.',            traits: ['single-pass'],                 objective: 'Gagnez en une seule passe.',     baseSeed: 'adv-03-dernier-tour' },
+  { name: 'Portes Closes',    story: 'Les colonnes vides se referment derrière vous.',                     traits: ['locked-empties'],              objective: 'Gagnez sans rouvrir de colonne.', baseSeed: 'adv-04-portes-closes' },
+  { name: 'Le Fil de Soie',   story: 'Une seule enseigne par suite. La patience devient une arme.',        traits: ['same-suit'],                   objective: 'Gagnez en suites de même enseigne.', baseSeed: 'adv-05-fil-de-soie' },
+  { name: 'Sans Filet',       story: "Plus de retour en arrière. Réfléchissez avant de poser.",            traits: ['no-undo', 'draw-three'],       objective: 'Gagnez sans annuler.',           baseSeed: 'adv-06-sans-filet' },
+  { name: 'Le Monde Renversé', story: 'Les fondations descendent, le tableau monte. Tout est inversé.',    traits: ['foundations-down', 'reverse-tableau'], objective: 'Gagnez dans le monde inversé.', baseSeed: 'adv-07-monde-renverse' },
+  { name: 'La Dernière Table', story: 'Tout ce que vous avez appris, en une seule donne.',                 traits: ['no-recycle', 'locked-empties', 'same-suit'], objective: 'Terminez l’aventure.',   baseSeed: 'adv-08-derniere-table' },
+];
 
 function pickJourneyTraits(stage, profile) {
   // introduce one trait every other stage, chosen from unlocked traits, cycling

@@ -12,10 +12,11 @@ import { Controller } from './ui/interaction.js';
 import { audio } from './ui/audio.js';
 import { loadArt, tableArtUrl, artCount } from './ui/art.js';
 import {
-  DEALERS, UPGRADES, tick as idleTick, coinsPerSecond, coinsForResult,
-  dealerCost, buyDealer, buyUpgrade, dealerUnlocked, affordable,
-  fmtCoins, fmtDuration, OFFLINE_CAP_HOURS,
-} from './meta/idle.js';
+  POWERS, getPower, shopList, chargesOf, buyCharges, spendCharge,
+  coinsForResult, awardCoins, fmtCoins,
+} from './meta/powers.js';
+import { EFFECTS } from './engine/powers-fx.js';
+import { CHAPTERS } from './modes.js';
 
 export class App {
   constructor() {
@@ -46,6 +47,8 @@ export class App {
       newGame: () => this.showMenu(),
       menu: () => this.showMenu(),
       onWin: () => this.onWin(),
+      tryReserve: (id) => this.tryReserve(id),
+      cancelReserve: () => this.cancelReserve(),
     });
   }
 
@@ -60,17 +63,7 @@ export class App {
     this.bindModalRoot();
     this.controller.bind(this.stageEl);
 
-    // ---- idle layer ----
-    // Settle whatever the dealers earned while the player was away, then keep
-    // producing on a steady tick.
-    const away = idleTick(this.profile.idle);
-    this.startIdleLoop();
     this.updateCoins();
-    if (away.earned >= 1 && away.elapsedMs > 60000) {
-      this.showOfflineEarnings(away);
-      saveProfile(this.profile);
-      return; // the offline panel leads into the menu
-    }
 
     // resume if a saved game exists, else show menu
     const resume = this.profile.history && this.profile.history.resume;
@@ -78,110 +71,125 @@ export class App {
     else this.showMenu();
   }
 
-  // ---------- idle ----------
-
-  startIdleLoop() {
-    if (this.idleTimer) clearInterval(this.idleTimer);
-    this.idleTimer = setInterval(() => {
-      idleTick(this.profile.idle);
-      this.updateCoins();
-    }, 1000);
-    // persist periodically rather than every tick
-    if (this.idleSaveTimer) clearInterval(this.idleSaveTimer);
-    this.idleSaveTimer = setInterval(() => saveProfile(this.profile), 10000);
-    // and always on the way out, so nothing is lost
-    if (!this._boundUnload) {
-      this._boundUnload = true;
-      window.addEventListener('beforeunload', () => {
-        idleTick(this.profile.idle);
-        saveProfile(this.profile);
-      });
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          idleTick(this.profile.idle);
-          saveProfile(this.profile);
-        }
-      });
-    }
-  }
-
-  /**
-   * Idle demo: whenever the player isn't in a hand, the dealers actually play
-   * a visible game on the table behind the menu. An idle game should be alive
-   * on screen, not just a number ticking up.
-   */
-  startDemo() {
-    this.stopDemo();
-    this.demoOn = true;
-    const speed = () => Math.max(140, 700 - (coinsPerSecond(this.profile.idle) * 4));
-    const step = () => {
-      if (!this.demoOn) return;
-      // no dealers hired yet → nothing plays itself
-      if (coinsPerSecond(this.profile.idle) <= 0) { this.demoTimer = setTimeout(step, 1500); return; }
-      if (!this.demoGame) { this.newDemoGame(); this.demoTimer = setTimeout(step, 600); return; }
-
-      const g = this.demoGame;
-      const moves = legalMoves(g);
-      // pick a sensible move: foundation first, then a reveal, then anything
-      const pick = moves.find((m) => m.type === 'tab-to-foundation' || m.type === 'waste-to-foundation')
-        || moves.find((m) => m.type === 'tab-to-tab' && (() => {
-             const s = g.tableau[m.from];
-             return s.length - m.count - 1 >= 0 && !s[s.length - m.count - 1].faceUp;
-           })())
-        || moves.find((m) => m.type !== 'recycle')
-        || moves[0];
-
-      if (!pick || checkWin(g)) { this.newDemoGame(); this.demoTimer = setTimeout(step, 900); return; }
-      applyMove(g, pick);
-      this.renderer.sync(g);
-      this.demoTimer = setTimeout(step, speed());
-    };
-    step();
-  }
-
-  newDemoGame() {
-    const seed = 'demo-' + Math.floor(this.profile.idle.lifetimeCoins) + '-' + this.profile.gamesPlayed + '-' + (this._demoN = (this._demoN || 0) + 1);
-    this.demoGame = createGame(seed, makeRng(seed), composeRules([]));
-    this.renderer.build(this.demoGame);
-    this.renderer.measure();
-    this.renderer.setBack(this.profile.activeBack);
-    this.renderer.sync(this.demoGame);
-  }
-
-  stopDemo() {
-    this.demoOn = false;
-    if (this.demoTimer) { clearTimeout(this.demoTimer); this.demoTimer = null; }
-  }
+  // ---------- powers ----------
 
   updateCoins() {
-    const idle = this.profile.idle;
+    const pw = this.profile.powers;
     const c = document.getElementById('hud-coins');
+    if (c) c.textContent = fmtCoins(pw.coins);
     const r = document.getElementById('hud-rate');
-    if (c) c.textContent = fmtCoins(idle.coins);
-    if (r) {
-      const cps = coinsPerSecond(idle);
-      r.textContent = cps > 0 ? `+${fmtCoins(cps)}/s` : 'au repos';
-    }
-    // live-refresh the shop if it's open
+    if (r) r.textContent = 'pièces';
+    this.renderPowerBar();
     if (this._shopOpen) this.renderShopBody();
   }
 
-  showOfflineEarnings(away) {
-    const idle = this.profile.idle;
-    this.openModal(`
-      <div class="overlay"><div class="panel offline">
-        <div class="big">🌙</div>
-        <h2>Pendant votre absence</h2>
-        <div class="sub">Vos croupiers ont joué pendant ${fmtDuration(away.elapsedMs)}</div>
-        <div class="coin-hero">+${fmtCoins(away.earned)} <span>🪙</span></div>
-        ${away.capped ? `<p class="note">Les gains hors ligne sont plafonnés à ${OFFLINE_CAP_HOURS} heures — rien n'est jamais perdu si vous restez absent plus longtemps.</p>` : ''}
-        <div class="btn-row"><button class="btn primary" data-act="collect">Encaisser</button></div>
-      </div></div>
-    `);
-    document.getElementById('modal-root').querySelector('[data-act="collect"]').onclick = () => {
-      audio.unlock();
-      this.showMenu();
-    };
+  /** The power bar along the bottom of the screen. */
+  renderPowerBar() {
+    const bar = document.getElementById('power-bar');
+    if (!bar) return;
+    const pw = this.profile.powers;
+    const owned = POWERS.filter((p) => chargesOf(pw, p.id) > 0);
+    const inHand = !!this.game && !this.game.won;
+
+    if (!owned.length) {
+      bar.innerHTML = `<button class="power-empty" data-open-shop>
+        <span class="emoji">✨</span>
+        <span>Achetez des pouvoirs — ${fmtCoins(pw.coins)} 🪙</span>
+      </button>`;
+      bar.querySelector('[data-open-shop]').onclick = () => this.showShop();
+      return;
+    }
+
+    bar.innerHTML = owned.map((p) => {
+      const n = chargesOf(pw, p.id);
+      const dead = !inHand || (p.timedOnly && !(this.game && this.game.timeLimitMs));
+      return `<button class="power-btn${dead ? ' dead' : ''}" data-power="${p.id}"
+        title="${p.name} — ${p.desc}" ${dead ? 'disabled' : ''}>
+        <span class="emoji">${p.emoji}</span>
+        <span class="nm">${p.name}</span>
+        <span class="chg">${n}</span>
+      </button>`;
+    }).join('') + `<button class="power-add" data-open-shop title="Boutique de pouvoirs">＋</button>`;
+
+    bar.querySelectorAll('[data-power]').forEach((b) => {
+      b.onclick = () => this.usePower(b.dataset.power);
+    });
+    const add = bar.querySelector('[data-open-shop]');
+    if (add) add.onclick = () => this.showShop();
+  }
+
+  /** Spend a charge and apply the effect. Refunds the charge if it fails. */
+  usePower(id) {
+    const p = getPower(id);
+    if (!p || !this.game || this.game.won) { audio.invalid(); return; }
+    const pw = this.profile.powers;
+    if (chargesOf(pw, id) <= 0) { audio.invalid(); this.toast('Aucune charge'); return; }
+
+    // Réserve is a two-step power: arm it, then the next card tap is consumed.
+    if (id === 'free-cell') {
+      if (this.game.reserve) { this.toast('La réserve est déjà occupée'); audio.invalid(); return; }
+      this.armReserve();
+      return;
+    }
+
+    const fx = EFFECTS[id];
+    if (!fx) { audio.invalid(); return; }
+    const res = id === 'reshuffle' ? fx(this.game, makeRng(this.game.seed + ':rs' + this.game.moves)) : fx(this.game);
+    if (!res || !res.ok) {
+      audio.invalid();
+      this.toast(res?.reason || 'Impossible ici');
+      return;
+    }
+
+    spendCharge(pw, id);
+    saveProfile(this.profile);
+    audio.unlock();
+    this.sync();
+    this.updateHUD();
+    this.updateCoins();
+    this.saveResume();
+    this.flashPowerFeedback(id, res);
+    if (checkWin(this.game)) this.onWin();
+  }
+
+  /** Arm the Réserve power: the next top-card tap stores that card. */
+  armReserve() {
+    this.reserveArmed = true;
+    document.body.classList.add('arming-reserve');
+    this.toast('Touchez une carte du dessus à mettre en réserve');
+  }
+
+  /** Called by the controller when a card is tapped while Réserve is armed. */
+  tryReserve(cardId) {
+    if (!this.reserveArmed || !this.game) return false;
+    const res = EFFECTS['free-cell'](this.game, cardId);
+    if (!res.ok) { audio.invalid(); this.toast(res.reason); return true; }
+    this.reserveArmed = false;
+    document.body.classList.remove('arming-reserve');
+    spendCharge(this.profile.powers, 'free-cell');
+    saveProfile(this.profile);
+    audio.unlock();
+    this.sync();
+    this.updateCoins();
+    this.saveResume();
+    return true;
+  }
+
+  cancelReserve() {
+    if (!this.reserveArmed) return;
+    this.reserveArmed = false;
+    document.body.classList.remove('arming-reserve');
+  }
+
+  flashPowerFeedback(id, res) {
+    if (id === 'peek' && res.cardId) {
+      const el = this.renderer.getById(res.cardId);
+      if (el) { el.classList.add('hint'); setTimeout(() => el.classList.remove('hint'), 1600); }
+      this.toast('Carte révélée');
+    } else if (id === 'ace-call') this.toast('As envoyé aux fondations');
+    else if (id === 'reshuffle') this.toast(`Pioche rebattue (${res.count} cartes)`);
+    else if (id === 'undo-burst') this.toast(`${res.undone} coup(s) annulé(s)`);
+    else if (id === 'time-gift') this.toast(`+${res.seconds} secondes`);
   }
 
   applyAppearance() {
@@ -221,8 +229,7 @@ export class App {
   // ---------- game lifecycle ----------
 
   async startMode(mode, opts = {}) {
-    this.stopDemo();
-    this.demoGame = null;
+    this.cancelReserve();
     this.closeModal();
     this.showSpinner('Distribution…');
     // yield to let spinner paint before heavy solver work
@@ -421,12 +428,23 @@ export class App {
     const xp = xpForResult(res);
     p.xp += xp;
     p.tier = tierFromXp(p.xp);
-    // coins — the idle currency, earned by playing
-    const coins = coinsForResult(p.idle, res);
-    p.idle.coins += coins;
-    p.idle.lifetimeCoins += coins;
+    // coins — earned only by playing, spent on power charges
+    const coins = coinsForResult(res);
+    awardCoins(p.powers, coins);
     this.lastCoins = coins;
     this.updateCoins();
+    // mode-specific records
+    if (res.won && this.mode === 'adventure') {
+      const ch = (this.deal && this.deal.meta && this.deal.meta.chapter) ?? 0;
+      if (!p.adventure.cleared.includes(ch)) p.adventure.cleared.push(ch);
+      p.adventure.chapter = Math.min(CHAPTERS.length - 1, Math.max(p.adventure.chapter, ch + 1));
+    }
+    if (res.won && this.mode === 'timed' && res.timeMs) {
+      if (p.bestTimedMs == null || res.timeMs < p.bestTimedMs) p.bestTimedMs = res.timeMs;
+    }
+    if (this.mode === 'tide') {
+      p.bestTide = Math.max(p.bestTide || 0, res.foundationCards || 0);
+    }
     // unlocks
     const earned = evaluateUnlocks(p, res);
     applyUnlocks(p, earned);
@@ -452,7 +470,7 @@ export class App {
 
   // ---------- sync/hud/timer ----------
 
-  sync() { this.renderer.sync(this.game); this.updateHUD(); }
+  sync() { this.renderer.sync(this.game); this.updateHUD(); this.renderPowerBar(); }
   updateHUD() {
     if (!this.game) return;
     document.getElementById('hud-score').textContent = this.game.score;
@@ -461,12 +479,54 @@ export class App {
   startTimer() {
     this.stopTimer();
     this.startTs = Date.now();
+    const el = document.getElementById('hud-time');
+    const label = document.getElementById('hud-time-label');
+    const limit = this.game ? this.game.timeLimitMs : 0;
+    if (label) label.textContent = limit ? 'Restant' : 'Temps';
     this.timer = setInterval(() => {
       const ms = this.elapsedBase + (Date.now() - this.startTs);
-      const s = Math.floor(ms / 1000);
-      const mm = Math.floor(s / 60), ss = s % 60;
-      document.getElementById('hud-time').textContent = `${mm}:${String(ss).padStart(2,'0')}`;
-    }, 500);
+      if (limit) {
+        // counting DOWN, plus whatever the Sursis power granted
+        const left = limit + (this.game.timeBonusMs || 0) - ms;
+        const s = Math.max(0, Math.ceil(left / 1000));
+        el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        el.classList.toggle('urgent', s <= 30);
+        if (left <= 0) { this.onTimeUp(); return; }
+      } else {
+        const s = Math.floor(ms / 1000);
+        el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      }
+    }, 250);
+  }
+
+  /** Timed mode ran out. Counts as a loss, but you keep the coins you earned. */
+  onTimeUp() {
+    this.stopTimer();
+    if (!this.game || this.game.won) return;
+    audio.invalid();
+    const res = {
+      won: false,
+      mode: this.mode,
+      traits: (this.deal && this.deal.traits) || [],
+      moves: this.game.moves,
+      timeMs: this.game.timeLimitMs + (this.game.timeBonusMs || 0),
+      score: this.game.score,
+      undosUsed: this.game.undosUsed,
+      foundationCards: this.game.foundations.reduce((s, f) => s + f.length, 0),
+    };
+    this.recordResult(res);
+    this.openModal(`<div class="panel">
+      <h2>Temps écoulé</h2>
+      <div class="sub">${res.foundationCards}/52 aux fondations · +${fmtCoins(this.lastCoins || 0)} 🪙</div>
+      <p class="note">Le pouvoir <strong>Sursis</strong> ajoute 45 secondes si vous en avez une charge.</p>
+      <div class="btn-row">
+        <button class="btn ghost" data-act="menu">Menu</button>
+        <button class="btn primary" data-act="again">Réessayer</button>
+      </div>
+    </div>`);
+    const root = document.getElementById('modal-root');
+    root.querySelector('[data-act="menu"]').onclick = () => this.showMenu();
+    root.querySelector('[data-act="again"]').onclick = () => this.startMode('timed', { seconds: (this.deal?.meta?.seconds) || 300 });
   }
   stopTimer() { if (this.timer) { clearInterval(this.timer); this.timer = null; } }
 
@@ -495,10 +555,15 @@ export class App {
   showMenu() {
     this.stopTimer();
     this._shopOpen = false;
-    this.startDemo(); // the table keeps playing behind the menu
+    this.cancelReserve();
+    this.game = null; // the board sits idle; nothing plays itself
     const p = this.profile;
     const tp = tierProgress(p.xp);
+    const advDone = p.adventure.cleared.length;
     const modes = [
+      { id: 'adventure', ico: '🗺️', t: 'Aventure', d: `Huit chapitres, huit règles. ${advDone}/${CHAPTERS.length} terminés.`, locked: false, feature: true },
+      { id: 'timed', ico: '⏱️', t: 'Chrono', d: p.bestTimedMs ? `Battez le temps. Record : ${fmtTime(p.bestTimedMs)}.` : 'Cinq minutes pour tout finir.', locked: false, feature: true },
+      { id: 'tide', ico: '🌊', t: 'Marée', d: `La mer monte et remplit vos colonnes. Record : ${p.bestTide || 0}/52.`, locked: false, feature: true },
       { id: 'classic', ico: '♣', t: 'Classique', d: 'Klondike pur. Donne aléatoire — le pari traditionnel.', locked: false },
       { id: 'journey', ico: '✦', t: 'Parcours', d: 'La voie principale. Les traits arrivent en progressant.', locked: false },
       { id: 'daily', ico: '☉', t: 'Donne du jour', d: `Une donne résoluble par jour — ${todayStr()}.`, locked: false },
@@ -506,7 +571,7 @@ export class App {
       { id: 'ascension', ico: '△', t: 'Ascension', d: "Des séries de victoires qui montent. Jusqu'où irez-vous ?", locked: p.tier < 3, lock: p.tier < 3 ? `Rang 3 requis` : '' },
       { id: 'zen', ico: '◐', t: 'Zen', d: 'Détendu, toujours résoluble. Aucune pression.', locked: false },
     ];
-    const cards = modes.map((m) => `<button class="mode-card" data-mode="${m.id}" ${m.locked ? 'disabled' : ''}>
+    const cards = modes.map((m) => `<button class="mode-card${m.feature ? ' feature' : ''}" data-mode="${m.id}" ${m.locked ? 'disabled' : ''}>
       <span class="ico">${m.ico}</span><span class="t">${m.t}</span><span class="d">${m.d}</span>${m.lock ? `<span class="lock">${m.lock}</span>` : ''}
     </button>`).join('');
     this.openModal(`
@@ -519,8 +584,8 @@ export class App {
           </div>
         </div>
         <button class="btn primary shop-cta" data-act="shop">
-          🪙 Salle de jeu — <span id="menu-coins">${fmtCoins(p.idle.coins)}</span> pièces
-          ${coinsPerSecond(p.idle) > 0 ? `<small>+${fmtCoins(coinsPerSecond(p.idle))}/s</small>` : '<small>engagez votre premier croupier</small>'}
+          ✨ Pouvoirs — <span id="menu-coins">${fmtCoins(p.powers.coins)}</span> pièces
+          <small>${totalCharges(p.powers) ? `${totalCharges(p.powers)} charge(s) en poche` : 'aucune charge'}</small>
         </button>
         <div class="menu-grid">${cards}</div>
         <div class="btn-row">
@@ -542,6 +607,9 @@ export class App {
         const mode = b.dataset.mode;
         if (mode === 'contract') this.showContractPicker();
         else if (mode === 'ascension') this.showAscensionPicker();
+        else if (mode === 'adventure') this.showAdventurePicker();
+        else if (mode === 'timed') this.showTimedPicker();
+        else if (mode === 'tide') this.showTidePicker();
         else this.startMode(mode);
       };
     });
@@ -601,6 +669,81 @@ export class App {
     const root = document.getElementById('modal-root');
     root.querySelector('[data-act="menu"]').onclick = () => this.showMenu();
     root.querySelector('[data-act="again"]').onclick = () => this.startMode(this.mode);
+  }
+
+  // ---------- new mode pickers ----------
+
+  showAdventurePicker() {
+    const p = this.profile;
+    const list = CHAPTERS.map((c, i) => {
+      const done = p.adventure.cleared.includes(i);
+      // you may replay anything cleared, and attempt the next one
+      const open = done || i <= p.adventure.chapter;
+      const traits = c.traits.length
+        ? c.traits.map((t) => getTrait(t)?.name || t).join(' · ')
+        : 'Règles classiques';
+      return `<button class="mode-card chapter${done ? ' done' : ''}" data-chapter="${i}" ${open ? '' : 'disabled'}>
+        <span class="ico">${done ? '✅' : open ? '📖' : '🔒'}</span>
+        <span class="t">${i + 1}. ${c.name}</span>
+        <span class="d">${c.story}</span>
+        <span class="chip"><span class="v">${traits}</span></span>
+      </button>`;
+    }).join('');
+    this.openModal(`<div class="panel">
+      <h2>Aventure</h2>
+      <div class="sub">${p.adventure.cleared.length}/${CHAPTERS.length} chapitres terminés</div>
+      <div class="menu-grid">${list}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+    document.getElementById('modal-root').querySelectorAll('[data-chapter]').forEach((b) => {
+      b.onclick = () => this.startMode('adventure', { chapter: parseInt(b.dataset.chapter, 10) });
+    });
+  }
+
+  showTimedPicker() {
+    const p = this.profile;
+    const opts = [
+      { s: 180, t: '3 minutes', d: 'Pour les mains rapides.' },
+      { s: 300, t: '5 minutes', d: 'Le rythme conseillé.' },
+      { s: 600, t: '10 minutes', d: 'Confortable mais compté.' },
+    ];
+    const list = opts.map((o) => `<button class="mode-card" data-seconds="${o.s}">
+      <span class="ico">⏱️</span><span class="t">${o.t}</span><span class="d">${o.d}</span>
+    </button>`).join('');
+    this.openModal(`<div class="panel">
+      <h2>Chrono</h2>
+      <div class="sub">La donne est toujours résoluble — seul le temps vous arrête</div>
+      ${p.bestTimedMs ? `<p class="note">Votre meilleure victoire : ${fmtTime(p.bestTimedMs)}.</p>` : ''}
+      <div class="menu-grid">${list}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+    document.getElementById('modal-root').querySelectorAll('[data-seconds]').forEach((b) => {
+      b.onclick = () => this.startMode('timed', { seconds: parseInt(b.dataset.seconds, 10) });
+    });
+  }
+
+  showTidePicker() {
+    const p = this.profile;
+    const opts = [
+      { n: 16, t: 'Marée douce', d: 'La mer monte tous les 16 coups.' },
+      { n: 12, t: 'Marée vive', d: 'Tous les 12 coups. Le rythme conseillé.' },
+      { n: 8, t: 'Tempête', d: 'Tous les 8 coups. Bonne chance.' },
+    ];
+    const list = opts.map((o) => `<button class="mode-card" data-tide="${o.n}">
+      <span class="ico">🌊</span><span class="t">${o.t}</span><span class="d">${o.d}</span>
+    </button>`).join('');
+    this.openModal(`<div class="panel">
+      <h2>Marée</h2>
+      <div class="sub">Le tableau se remplit pendant que vous le videz</div>
+      <p class="note">Toutes les N actions, une carte est distribuée sur chaque colonne.
+      Comme le plateau change en cours de route, cette donne n'est pas validée par le
+      solveur : il s'agit de tenir, pas de prouver. Record : ${p.bestTide || 0}/52 cartes aux fondations.</p>
+      <div class="menu-grid">${list}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+    document.getElementById('modal-root').querySelectorAll('[data-tide]').forEach((b) => {
+      b.onclick = () => this.startMode('tide', { tideEvery: parseInt(b.dataset.tide, 10) });
+    });
   }
 
   showContractPicker() {
@@ -727,16 +870,16 @@ export class App {
       <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
   }
 
-  // ---------- shop ----------
+  // ---------- power shop ----------
 
   showShop() {
     this.openModal(`
       <div class="overlay"><div class="panel shop">
-        <h2>Salle de jeu</h2>
-        <div class="sub">Engagez des croupiers. Ils jouent quand vous ne jouez pas.</div>
+        <h2>Pouvoirs</h2>
+        <div class="sub">Achetez des charges. Dépensez-les pendant une partie.</div>
         <div class="shop-hero">
           <div class="coin-hero"><span id="shop-coins">0</span> <span>🪙</span></div>
-          <div class="rate" id="shop-rate">idle</div>
+          <div class="rate" id="shop-rate"></div>
         </div>
         <div id="shop-body"></div>
         <div class="btn-row"><button class="btn ghost" data-act="back">Retour</button></div>
@@ -751,73 +894,46 @@ export class App {
   renderShopBody() {
     const body = document.getElementById('shop-body');
     if (!body) { this._shopOpen = false; return; }
-    const idle = this.profile.idle;
+    const pw = this.profile.powers;
 
     const coinsEl = document.getElementById('shop-coins');
     const rateEl = document.getElementById('shop-rate');
-    if (coinsEl) coinsEl.textContent = fmtCoins(idle.coins);
+    if (coinsEl) coinsEl.textContent = fmtCoins(pw.coins);
     if (rateEl) {
-      const cps = coinsPerSecond(idle);
-      rateEl.textContent = cps > 0 ? `${fmtCoins(cps)} pièces / seconde` : 'aucun croupier — gagnez une partie pour commencer';
+      const n = totalCharges(pw);
+      rateEl.textContent = n ? `${n} charge(s) en poche` : 'Gagnez des parties pour gagner des pièces';
     }
 
-    const dealers = DEALERS.filter((d) => dealerUnlocked(idle, d)).map((d) => {
-      const owned = idle.dealers[d.id] || 0;
-      const cost = dealerCost(d, owned);
-      const can = idle.coins >= cost;
-      const contrib = owned * d.rate;
-      return `<button class="shop-item ${can ? '' : 'poor'}" data-buy="${d.id}" ${can ? '' : 'disabled'}>
-        <span class="emoji">${d.emoji}</span>
+    const items = shopList().map((p) => {
+      const owned = chargesOf(pw, p.id);
+      const can = pw.coins >= p.cost;
+      return `<button class="shop-item ${can ? '' : 'poor'}" data-buy="${p.id}" ${can ? '' : 'disabled'}>
+        <span class="emoji">${p.emoji}</span>
         <span class="info">
-          <span class="name">${d.name}${owned ? ` <b>×${owned}</b>` : ''}</span>
-          <span class="desc">${d.desc}</span>
-          <span class="rate">${fmtCoins(d.rate)}/s chacun${contrib ? ` · rapporte ${fmtCoins(contrib)}/s` : ''}</span>
+          <span class="name">${p.name}${owned ? ` <b>×${owned}</b>` : ''}</span>
+          <span class="desc">${p.desc}</span>
+          <span class="rate">${p.hint}</span>
         </span>
-        <span class="cost">${fmtCoins(cost)} 🪙</span>
+        <span class="cost">${fmtCoins(p.cost)} 🪙</span>
       </button>`;
     }).join('');
-
-    const ups = UPGRADES.filter((u) => !idle.upgrades.includes(u.id) && idle.lifetimeCoins >= u.cost * 0.3).map((u) => {
-      const can = idle.coins >= u.cost;
-      return `<button class="shop-item up ${can ? '' : 'poor'}" data-up="${u.id}" ${can ? '' : 'disabled'}>
-        <span class="emoji">${u.emoji}</span>
-        <span class="info"><span class="name">${u.name}</span><span class="desc">${u.desc}</span></span>
-        <span class="cost">${fmtCoins(u.cost)} 🪙</span>
-      </button>`;
-    }).join('');
-
-    const ownedUps = UPGRADES.filter((u) => idle.upgrades.includes(u.id))
-      .map((u) => `<span class="owned-up" title="${u.desc}">${u.emoji} ${u.name}</span>`).join('');
 
     body.innerHTML = `
-      ${dealers ? `<h3>Croupiers</h3><div class="shop-list">${dealers}</div>`
-        : `<p class="note">Gagnez une partie pour vos premières pièces, puis engagez un Apprenti.</p>`}
-      ${ups ? `<h3>Améliorations</h3><div class="shop-list">${ups}</div>` : ''}
-      ${ownedUps ? `<h3>Acquises</h3><div class="owned-ups">${ownedUps}</div>` : ''}
-      <p class="note">Aucun achat, aucune publicité, aucune énergie. Les pièces viennent de vos parties et de vos croupiers — c'est toute l'économie du jeu.</p>
+      <div class="shop-list">${items}</div>
+      <p class="note">Chaque usage consomme une charge : les pouvoirs créent des choix,
+      ils ne jouent pas à votre place. Aucun achat réel, aucune publicité, aucune énergie —
+      les pièces se gagnent uniquement en jouant. Maj+clic pour acheter cinq charges.</p>
     `;
 
     body.querySelectorAll('[data-buy]').forEach((b) => {
       b.onclick = (e) => {
-        const id = b.dataset.buy;
-        const n = e.shiftKey ? affordable(DEALERS.find((d) => d.id === id), this.profile.idle.dealers[id] || 0, this.profile.idle.coins).count : 1;
-        if (buyDealer(this.profile.idle, id, Math.max(1, n))) {
+        const n = e.shiftKey ? 5 : 1;
+        if (buyCharges(this.profile.powers, b.dataset.buy, n)) {
           audio.unlock();
           saveProfile(this.profile);
           this.updateCoins();
           this.renderShopBody();
-        } else audio.invalid();
-      };
-    });
-    body.querySelectorAll('[data-up]').forEach((b) => {
-      b.onclick = () => {
-        if (buyUpgrade(this.profile.idle, b.dataset.up)) {
-          audio.unlock();
-          saveProfile(this.profile);
-          this.updateCoins();
-          this.renderShopBody();
-          this.toast('Amélioration achetée');
-        } else audio.invalid();
+        } else { audio.invalid(); this.toast('Pas assez de pièces'); }
       };
     });
   }
@@ -833,7 +949,16 @@ export class App {
 
 // ---------- helpers ----------
 
-function modeLabel(m) { return { classic: 'Classique', journey: 'Parcours', daily: 'Donne du jour', contract: 'Contrat', ascension: 'Ascension', zen: 'Zen' }[m] || m; }
+function modeLabel(m) {
+  return {
+    classic: 'Classique', journey: 'Parcours', daily: 'Donne du jour', contract: 'Contrat',
+    ascension: 'Ascension', zen: 'Zen', adventure: 'Aventure', timed: 'Chrono', tide: 'Marée',
+  }[m] || m;
+}
+/** Total power charges held across every power. */
+function totalCharges(pw) {
+  return Object.values(pw.charges || {}).reduce((a, b) => a + (b || 0), 0);
+}
 function fmtTime(ms) { if (!ms && ms !== 0) return '—'; const s = Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
 function fmtDiff(traits) { const d = difficultyValue(traits); return (d>0?'+':'')+d; }
 function sourceMatches(m, loc, game) {

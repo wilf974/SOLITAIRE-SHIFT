@@ -59,6 +59,11 @@ export function createGame(seed, rng, rules = {}) {
     won: false,
     startTime: null,
     elapsedMs: 0,
+    reserve: null,        // the Réserve power's held card
+    timeLimitMs: r.timeLimitMs || 0, // >0 in timed modes
+    timeBonusMs: 0,       // granted by the Sursis power
+    tideEvery: r.tideEvery || 0,     // Marée: deal a row every N moves
+    tideCount: 0,
   };
 }
 
@@ -221,6 +226,23 @@ export function legalMoves(state) {
     }
   }
 
+  // reserve (Réserve power) -> foundation / tableau
+  if (state.reserve) {
+    const card = state.reserve;
+    const fi = foundationIndexFor(card);
+    if (fi >= 0 && foundationFits(r, card, state.foundations[fi])) {
+      moves.push({ type: 'reserve-to-foundation' });
+    }
+    for (let to = 0; to < 7; to++) {
+      const dest = state.tableau[to];
+      if (!dest.length) {
+        if (canStartEmptyColumn(r, card)) moves.push({ type: 'reserve-to-tab', to });
+      } else if (tableauFits(r, card, top(dest))) {
+        moves.push({ type: 'reserve-to-tab', to });
+      }
+    }
+  }
+
   return moves;
 }
 
@@ -252,6 +274,8 @@ function snapshot(state) {
     stockPasses: state.stockPasses,
     score: state.score,
     won: state.won,
+    reserve: state.reserve ? { ...state.reserve } : null,
+    tideCount: state.tideCount || 0,
   };
 }
 
@@ -274,6 +298,8 @@ export function undo(state) {
   state.stockPasses = snap.stockPasses;
   state.score = snap.score;
   state.won = snap.won;
+  state.reserve = snap.reserve ? { ...snap.reserve } : null;
+  state.tideCount = snap.tideCount || 0;
   return true;
 }
 
@@ -330,14 +356,54 @@ export function applyMove(state, move) {
       state.tableau[move.to].push(card);
       break;
     }
+    case 'reserve-to-foundation': {
+      if (!state.reserve) { state.history.pop(); return false; }
+      const card = state.reserve;
+      const fi = foundationIndexFor(card);
+      if (fi < 0 || !foundationFits(r, card, state.foundations[fi])) { state.history.pop(); return false; }
+      state.reserve = null;
+      state.foundations[fi].push(card);
+      scored += 10;
+      break;
+    }
+    case 'reserve-to-tab': {
+      if (!state.reserve) { state.history.pop(); return false; }
+      const card = state.reserve;
+      const dest = state.tableau[move.to];
+      const fits = dest.length ? tableauFits(r, card, top(dest)) : canStartEmptyColumn(r, card);
+      if (!fits) { state.history.pop(); return false; }
+      state.reserve = null;
+      dest.push(card);
+      break;
+    }
     default:
       return false;
   }
 
   state.moves += 1;
+  maybeTide(state);
   applyScore(state, move, scored);
   state.won = checkWin(state);
   return true;
+}
+
+/**
+ * "Marée" mode: every N moves the sea rises — one card from the stock is dealt
+ * face-up onto each tableau column. The board fights back, so you must clear
+ * faster than it fills. Does nothing when tideEvery is 0 (every other mode).
+ */
+function maybeTide(state) {
+  const every = state.tideEvery || 0;
+  if (!every || !state.stock.length) return;
+  state.tideCount = (state.tideCount || 0) + 1;
+  if (state.tideCount < every) return;
+  state.tideCount = 0;
+  for (let c = 0; c < state.tableau.length && state.stock.length; c++) {
+    const card = state.stock.pop();
+    card.faceUp = true;
+    state.tableau[c].push(card);
+  }
+  state.tideRose = true; // one-shot flag the UI clears after animating
 }
 
 function maybeReveal(state, col) {
@@ -380,6 +446,7 @@ export function locateCard(state, id) {
     const pile = state.tableau[c];
     for (let i = 0; i < pile.length; i++) if (pile[i].id === id) return { kind: 'tableau', col: c, index: i, pile, card: pile[i] };
   }
+  if (state.reserve && state.reserve.id === id) return { kind: 'reserve', index: 0, pile: [state.reserve], card: state.reserve };
   for (let i = 0; i < state.waste.length; i++) if (state.waste[i].id === id) return { kind: 'waste', index: i, pile: state.waste, card: state.waste[i] };
   for (let i = 0; i < state.stock.length; i++) if (state.stock[i].id === id) return { kind: 'stock', index: i, pile: state.stock, card: state.stock[i] };
   for (let f = 0; f < state.foundations.length; f++)
@@ -391,6 +458,7 @@ export function locateCard(state, id) {
 export function movableRun(state, id) {
   const loc = locateCard(state, id);
   if (!loc) return null;
+  if (loc.kind === 'reserve') return [loc.card];
   if (loc.kind === 'waste') return loc.index === state.waste.length - 1 ? [loc.card] : null;
   if (loc.kind === 'foundation') return loc.index === state.pile.length - 1 ? [loc.card] : null;
   if (loc.kind === 'tableau') {

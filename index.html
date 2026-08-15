@@ -19,11 +19,11 @@
         <div class="hud">
           <button class="coin-pill" id="btn-shop" title="Salle de jeu" aria-label="Salle de jeu">
             <span class="ico">🪙</span>
-            <span class="col"><span class="v" id="hud-coins">0</span><span class="k" id="hud-rate">au repos</span></span>
+            <span class="col"><span class="v" id="hud-coins">0</span><span class="k" id="hud-rate">pièces</span></span>
           </button>
           <div class="stat"><span class="v" id="hud-score">0</span><span class="k">Score</span></div>
           <div class="stat"><span class="v" id="hud-moves">0</span><span class="k">Coups</span></div>
-          <div class="stat"><span class="v" id="hud-time">0:00</span><span class="k">Temps</span></div>
+          <div class="stat"><span class="v" id="hud-time">0:00</span><span class="k" id="hud-time-label">Temps</span></div>
           <button class="iconbtn" id="btn-undo" title="Annuler (Z)" aria-label="Annuler">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5h-6"/></svg>
           </button>
@@ -44,6 +44,9 @@
       </main>
 
       <div class="help-hint" id="help-hint">Glissez les cartes · touchez pour envoyer aux fondations · double-touche pour déplacer automatiquement</div>
+
+      <!-- power bar: spend charges during a hand -->
+      <div class="power-bar" id="power-bar"></div>
     </div>
 
     <!-- modal root -->

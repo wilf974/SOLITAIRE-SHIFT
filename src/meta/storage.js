@@ -1,9 +1,9 @@
 // src/meta/storage.js — persistent profile via localStorage. Versioned, with export/import.
 
-import { defaultIdle } from './idle.js';
+import { defaultPowers } from './powers.js';
 
 const KEY = 'solitaire-shift:profile:v1';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 export function defaultProfile() {
   return {
@@ -40,7 +40,10 @@ export function defaultProfile() {
     ascension: { bestLevel: 0, runs: [] },
     settings: { muted: false, reduceMotion: false, autoFlip: true },
     history: { resume: null }, // last in-progress game snapshot
-    idle: defaultIdle(),
+    powers: defaultPowers(),
+    adventure: { chapter: 0, cleared: [] },
+    bestTimedMs: null,
+    bestTide: 0,
   };
 }
 
@@ -74,18 +77,26 @@ export function importProfile(str) {
 }
 
 function migrate(p) {
-  // v1 -> v2: the idle layer. Existing players keep everything and simply
-  // gain a fresh (empty) idle economy.
-  if (!p.idle || typeof p.idle !== 'object') p.idle = defaultIdle();
-  else {
-    const d = defaultIdle();
-    p.idle = { ...d, ...p.idle };
-    if (!p.idle.dealers || typeof p.idle.dealers !== 'object') p.idle.dealers = {};
-    if (!Array.isArray(p.idle.upgrades)) p.idle.upgrades = [];
-    if (!Number.isFinite(p.idle.coins)) p.idle.coins = 0;
-    if (!Number.isFinite(p.idle.lifetimeCoins)) p.idle.lifetimeCoins = p.idle.coins;
-    if (!Number.isFinite(p.idle.lastTick)) p.idle.lastTick = Date.now();
+  // v2 -> v3: the idle layer was replaced by spendable powers. Anyone who had
+  // idle coins keeps them as power coins; the dealers/upgrades are dropped.
+  if (!p.powers || typeof p.powers !== 'object') p.powers = defaultPowers();
+  const d = defaultPowers();
+  p.powers = { ...d, ...p.powers };
+  if (!p.powers.charges || typeof p.powers.charges !== 'object') p.powers.charges = {};
+  if (!p.powers.used || typeof p.powers.used !== 'object') p.powers.used = {};
+  if (!Number.isFinite(p.powers.coins)) p.powers.coins = 0;
+  if (!Number.isFinite(p.powers.lifetimeCoins)) p.powers.lifetimeCoins = p.powers.coins;
+  if (p.idle && Number.isFinite(p.idle.coins) && p.idle.coins > 0) {
+    p.powers.coins += Math.floor(p.idle.coins);
+    p.powers.lifetimeCoins += Math.floor(p.idle.coins);
   }
+  delete p.idle;
+
+  if (!p.adventure || typeof p.adventure !== 'object') p.adventure = { chapter: 0, cleared: [] };
+  if (!Array.isArray(p.adventure.cleared)) p.adventure.cleared = [];
+  if (!Number.isFinite(p.adventure.chapter)) p.adventure.chapter = 0;
+  if (!Number.isFinite(p.bestTide)) p.bestTide = 0;
+
   if (p.version !== SCHEMA_VERSION) p.version = SCHEMA_VERSION;
   return p;
 }

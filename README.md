@@ -1,10 +1,12 @@
 # SOLITAIRE: SHIFT
 
-A bright, playful **idle Klondike solitaire** for the browser. **The game's UI is in French.**
+A bright, playful **Klondike solitaire** for the browser, with spendable
+powers and three modes you won't find in a standard deck.
+**The game's UI is in French.**
 
-Play a hand yourself, hire dealers who keep playing while you're away, and spend
-the coins on upgrades. Real Klondike underneath — a genuine solver validates
-every progression deal, so a fair game is always winnable.
+Play a hand, earn coins, spend them on powers you trigger mid-game. Real
+Klondike underneath — a genuine solver validates every progression deal, so a
+fair game is always winnable.
 
 - Vanilla JS ES modules. **No build step. No runtime dependencies. No npm install.**
 - Card and table art generated with OpenAI at build time, committed as PNGs.
@@ -31,7 +33,7 @@ Any static host works too — the project is plain files.
 ## Test it
 
 ```bash
-npm test               # 83 tests: engine, shuffle, traits, solver, save, progression, idle
+npm test               # 94 tests: engine, shuffle, traits, solver, save, progression, powers
 npm run check          # parse every JS file (node --check per file)
 ```
 
@@ -46,27 +48,32 @@ suite takes ~20s.
 Drag a card, or tap it to auto-move, or double-tap to send it to a foundation.
 Keyboard: `Z` undo · `H` hint · `A` auto-complete · `Space` draw · `N` new · `Esc` menu.
 
-### The idle loop
-| | |
-|---|---|
-| **Play** | Finish a hand → earn coins |
-| **Hire** | Coins buy dealers (Apprenti → Croupier → Arnaqueur → Magicien → Automate → L'Oracle) |
-| **Idle** | Dealers earn coins every second, online and off |
-| **Upgrade** | Permanent multipliers on idle income and on your own wins |
+### Powers
+Coins are earned by playing. They buy **charges** of tactical powers, shown on a
+bar along the bottom of the screen and spent during a hand.
 
-Dealers you've hired actually play a **visible game on the table behind the
-menu** — the faster your income, the faster they play.
+| Power | Cost | What it does |
+|---|---|---|
+| 👁️ Clairvoyance | 40 | Reveals the deepest face-down card |
+| ⏪ Remontée | 60 | Undoes the last three moves at once |
+| 🔀 Rebattre | 70 | Shuffles the remaining stock |
+| ⏳ Sursis | 80 | Adds 45 seconds (Chrono only) |
+| 🎯 Appel d'As | 90 | Sends an available Ace straight home |
+| 📥 Réserve | 120 | Sets one card aside; play it back whenever |
 
-Offline earnings accrue while the tab is closed, capped at 8 hours. Nothing
-decays, nothing expires, nothing is lost by not logging in.
+Every use costs a charge, so powers create decisions rather than erasing
+difficulty. **Nothing plays itself.**
 
 **What this game will never do:** no purchases, no premium currency, no ads, no
-loot boxes, no energy meter, no timed FOMO. Coins come from playing and from
-dealers you bought with coins. That is the entire economy.
+loot boxes, no energy meter, no timed FOMO. Coins come from playing. That is the
+entire economy.
 
 ### Modes
 | Mode (in game) | What it is |
 |---|---|
+| **Aventure** | Eight authored chapters, each with its own rule and story |
+| **Chrono** | Beat the clock at 3, 5 or 10 minutes — the deal is always solvable |
+| **Marée** | Every N moves the sea rises and deals a card onto every column |
 | **Classique** | Pure Klondike, random deal — the traditional gamble |
 | **Parcours** | The main path; traits appear as you climb ranks |
 | **Donne du jour** | One solver-validated deal a day, identical for everyone |
@@ -86,15 +93,19 @@ carries a difficulty value, and harder combinations pay more XP. Veterans get
 `Retours comptés (+1)` · `Rois seulement (0)`
 
 ### Progression
-XP and tiers, plus unlocks gated on **deeds** rather than raw XP: win with No
+XP and ranks, plus unlocks gated on **deeds** rather than raw XP: win with No
 Recycle, hold a 5-game streak, clear a Daily, win with three hard traits at
-once. Card backs, court families, themes, achievements and a few secrets.
+once. Adventure tracks cleared chapters; Chrono keeps your best time; Marée
+keeps your deepest survival. Card backs, court families, themes and secrets.
 
 ### Fairness
-Journey, Daily, Contract, Ascension and Zen deals are validated by a real
-bounded-DFS solver with a transposition table. A deal that comes back
-`unsolvable` **or** `unknown` is rejected and a new seed is tried — validation is
-never faked. Classic stays random on purpose, because that's the traditional game.
+Adventure, Journey, Daily, Contract, Ascension, Chrono and Zen deals are
+validated by a real bounded-DFS solver with a transposition table. A deal that
+comes back `unsolvable` **or** `unknown` is rejected and a new seed is tried —
+validation is never faked. Two modes are deliberately unvalidated and say so:
+**Classique** stays random because that's the traditional game, and **Marée**
+cannot be validated at all — the board changes as you play, so there is no fixed
+solution to prove. It is a survival mode, not a puzzle.
 
 ---
 
@@ -148,11 +159,12 @@ src/
     deck.js  game.js    cards, rules, legal moves, undo, scoring
     traits.js           the 14 rule modifiers
     solver.js           bounded iterative DFS solvability validator
+    powers-fx.js        what each power does to a game state (pure)
     serialize.js        save/restore a game
   meta/
     storage.js          versioned localStorage profile + export/import
     mastery.js          XP, tiers, condition-based unlocks
-    idle.js             coins, dealers, upgrades, offline accrual
+    powers.js           coins, power charges, purchases
   ui/
     render.js           measured-geometry board renderer
     interaction.js      pointer drag/tap/keyboard
@@ -162,7 +174,7 @@ tools/
   serve.js              zero-dep static server
   check-syntax.js       parse every JS file
   gen-art/              build-side OpenAI art pipeline
-tests/                  node:test, 83 tests
+tests/                  node:test, 94 tests
 ```
 
 ### Design notes

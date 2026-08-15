@@ -121,8 +121,10 @@ export class BoardRenderer {
     const stock = mkSlot('stock', '↺');
     stock.dataset.label = '↺';
     const waste = mkSlot('waste', '');
-    const spacer = document.createElement('div');
-    spacer.className = 'spacer';
+    // the middle column doubles as the Réserve slot (empty in most modes)
+    const spacer = mkSlot('reserve', '📥');
+    spacer.classList.add('reserve');
+    this.slots.reserve = spacer;
     const foundations = ['f0', 'f1', 'f2', 'f3'].map((n) => mkSlot(n, SUIT_GLYPH[SUITS[parseInt(n.slice(1))]] || '◆'));
     top.append(stock, waste, spacer, ...foundations);
     this.slots.stock = stock; this.slots.waste = waste;
@@ -235,6 +237,15 @@ export class BoardRenderer {
       positions.push({
         id: card.id, card, loc: { slot: 'waste', dx: -dx }, faceUp: true,
         draggable: fromTop === 0, z: i,
+      });
+    }
+    // Reserve (the Réserve power's held card) — parks in the top-row gap.
+    // The slot only shows itself while it actually holds something.
+    if (this.slots.reserve) this.slots.reserve.classList.toggle('holding', !!game.reserve);
+    if (game.reserve) {
+      positions.push({
+        id: game.reserve.id, card: game.reserve,
+        loc: { slot: 'reserve' }, faceUp: true, draggable: true, z: 0,
       });
     }
     // Foundations
