@@ -4,6 +4,12 @@ A bright, playful **Klondike solitaire** for the browser, with spendable
 powers and three modes you won't find in a standard deck.
 **The game's UI is in French.**
 
+### ▶ [Play it here](https://wilf974.github.io/SOLITAIRE-SHIFT/)
+
+Best on a wide window — the board wants seven columns side by side. Installable
+from the browser menu, and playable offline once installed. An Android build
+lives in [`android/`](android/).
+
 Play a hand, earn coins, spend them on powers you trigger mid-game. Real
 Klondike underneath — a genuine solver validates every progression deal, so a
 fair game is always winnable.
