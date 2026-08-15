@@ -8,8 +8,9 @@ import { composeRules, difficultyValue, TRAITS, getTrait } from './engine/traits
 import { solve } from './engine/solver.js';
 import CONTRACTS from './data/contracts.json' with { type: 'json' };
 import { difficultyTraits, getDifficulty, supportsDifficulty } from './meta/difficulty.js';
+import { BOSSES, getBoss } from './engine/battle.js';
 
-export { CONTRACTS };
+export { CONTRACTS, BOSSES, getBoss };
 
 /** Find the first solvable seed for given rules, trying baseSeed::0, ::1, ... */
 function firstSolvable(baseSeed, traits, maxTries, nodeBudget) {
@@ -157,6 +158,20 @@ export async function makeDeal(mode, opts = {}) {
         mode, seed, rules, traits,
         objective: `La marée monte tous les ${every} coups. Videz le tableau.`,
         meta: { tideEvery: every, unvalidated: true, difficulty: opts.difficulty || 'standard' },
+      };
+    }
+    case 'battle': {
+      // A duel, not a puzzle: the stock is infinite and the board is only the
+      // arena, so there is nothing to solver-validate. Winning means reducing
+      // the boss to zero before it does the same to you.
+      const boss = getBoss(opts.bossId);
+      const seed = 'battle-' + boss.id + '-' + Math.random().toString(36).slice(2, 10);
+      return {
+        mode, seed,
+        rules: composeRules([]),
+        traits: [],
+        objective: `Vaincre ${boss.name}.`,
+        meta: { bossId: boss.id, name: boss.name, taunt: boss.taunt, unvalidated: true },
       };
     }
     default:

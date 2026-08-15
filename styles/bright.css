@@ -534,3 +534,137 @@ body.auto-finishing .power-bar { opacity: 0.5; pointer-events: none; }
 }
 .card .back.has-art::before,
 .card .back.has-art::after { content: none; }
+/* ---------- Battle mode ---------- */
+
+.battle-hud {
+  display: none;
+  position: relative;
+  z-index: 5;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 2vw, 24px);
+  padding: 4px clamp(10px, 2.5vw, 28px) 6px;
+}
+.battle-hud.on { display: flex; }
+
+.bt-side { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.bt-player { flex-direction: row-reverse; }
+.bt-face .ico.art { width: 40px; height: 40px; }
+.bt-meter { flex: 1; min-width: 0; }
+.bt-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(31,41,72,.35);
+  letter-spacing: .02em;
+}
+.bt-player .bt-name { text-align: right; }
+.bt-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(31,41,72,.28);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.25);
+}
+.bt-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width .35s var(--ease);
+}
+.bt-fill.boss { background: linear-gradient(90deg, #ff4d6d, #ff8fab); }
+.bt-fill.you  { background: linear-gradient(90deg, #17c964, #4ef0c8); }
+.bt-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  font-variant-numeric: tabular-nums;
+}
+.bt-player .bt-num { text-align: right; }
+
+.bt-mid { text-align: center; flex: none; min-width: 92px; }
+.bt-combo {
+  font-size: clamp(13px, 2.6vmin, 17px);
+  font-weight: 800;
+  color: #6b4300;
+  background: linear-gradient(160deg, #ffd76a, #ffb01f);
+  padding: 2px 12px;
+  border-radius: 999px;
+  display: inline-block;
+  animation: comboPulse .5s var(--pop);
+}
+@keyframes comboPulse { 0% { transform: scale(.7); } 100% { transform: scale(1); } }
+.bt-warn {
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  text-shadow: 0 1px 2px rgba(31,41,72,.35);
+}
+.bt-warn.soon { color: #ffe27a; animation: tick 1s steps(2) infinite; }
+
+/* floating damage numbers */
+.dmg-float {
+  position: absolute;
+  top: 6px;
+  font-size: clamp(18px, 4vmin, 28px);
+  font-weight: 800;
+  pointer-events: none;
+  animation: dmgFloat .9s ease-out forwards;
+  text-shadow: 0 2px 6px rgba(31,41,72,.4);
+}
+.dmg-float.boss { left: 18%; color: #fff0a8; }
+.dmg-float.you  { right: 18%; color: #ff8fab; }
+@keyframes dmgFloat {
+  0%   { opacity: 0; transform: translateY(6px) scale(.8); }
+  25%  { opacity: 1; transform: translateY(-4px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-38px) scale(1); }
+}
+
+.combo-pop {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  transform: translateX(-50%);
+  font-size: clamp(20px, 5vmin, 34px);
+  font-weight: 800;
+  color: #ffd84d;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(31,41,72,.45);
+  animation: comboPop .8s ease-out forwards;
+}
+@keyframes comboPop {
+  0%   { opacity: 0; transform: translateX(-50%) scale(.5); }
+  30%  { opacity: 1; transform: translateX(-50%) scale(1.25); }
+  100% { opacity: 0; transform: translateX(-50%) scale(1); }
+}
+
+/* the whole board flinches when the boss lands a hit */
+body.boss-strike #app { animation: bossShake .42s; }
+@keyframes bossShake {
+  0%,100% { transform: translate(0,0); }
+  20% { transform: translate(-5px, 2px); }
+  40% { transform: translate(5px, -2px); }
+  60% { transform: translate(-3px, 1px); }
+  80% { transform: translate(3px, -1px); }
+}
+
+/* battle abilities show a cooldown instead of a charge count */
+.power-btn.battle .chg.cd {
+  background: rgba(31,41,72,.55);
+  color: #fff;
+}
+.mode-card.boss.done { background: linear-gradient(160deg, #fff, #e8fbf0); }
+.mode-card .reward {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-deep);
+  background: rgba(255,201,60,.22);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce), (max-height: 420px) {
+  body.boss-strike #app { animation: none; }
+}

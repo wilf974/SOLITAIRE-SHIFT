@@ -67,6 +67,7 @@ export function createGame(seed, rng, rules = {}) {
     timeBonusMs: 0,       // granted by the Sursis power
     tideEvery: r.tideEvery || 0,     // Marée: deal a row every N moves
     tideCount: 0,
+    battle: null,         // Battle mode duel state, when in that mode
   };
 }
 
@@ -292,6 +293,8 @@ function snapshot(state) {
     won: state.won,
     reserve: state.reserve ? { ...state.reserve } : null,
     tideCount: state.tideCount || 0,
+    // deep enough: the battle holds only numbers, flags and a short log
+    battle: state.battle ? JSON.parse(JSON.stringify(state.battle)) : null,
   };
 }
 
@@ -316,6 +319,7 @@ export function undo(state) {
   state.won = snap.won;
   state.reserve = snap.reserve ? { ...snap.reserve } : null;
   state.tideCount = snap.tideCount || 0;
+  state.battle = snap.battle ? JSON.parse(JSON.stringify(snap.battle)) : null;
   return true;
 }
 

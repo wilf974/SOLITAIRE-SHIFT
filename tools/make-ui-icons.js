@@ -27,6 +27,9 @@ const ICONS = [
   'mode-journey', 'mode-daily', 'mode-contract', 'mode-ascension', 'mode-zen',
   // difficulty picker
   'diff-gentle', 'diff-standard', 'diff-sharp', 'diff-suited', 'diff-brutal',
+  // battle mode
+  'mode-battle', 'battle-strike', 'battle-guard', 'battle-focus', 'battle-surge',
+  'boss-gardien', 'boss-illusionniste', 'boss-horloger', 'boss-souveraine',
 ];
 
 const SIZE = 128;          // drawn at 26-34px, so 128 covers 4x displays

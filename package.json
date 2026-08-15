@@ -5,7 +5,7 @@
   "description": "SOLITAIRE: SHIFT — a collectible, trait-driven Klondike with mastery progression. Vanilla JS, no build step, no runtime deps.",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/engine.test.js tests/shuffle.test.js tests/traits.test.js tests/solver.test.js tests/serialize.test.js tests/progression.test.js tests/powers.test.js tests/difficulty.test.js",
+    "test": "node --test tests/engine.test.js tests/shuffle.test.js tests/traits.test.js tests/solver.test.js tests/serialize.test.js tests/progression.test.js tests/powers.test.js tests/difficulty.test.js tests/battle.test.js",
     "test:engine": "node --test tests/engine.test.js tests/shuffle.test.js tests/traits.test.js tests/solver.test.js",
     "test:meta": "node --test tests/progression.test.js tests/serialize.test.js",
     "check": "node tools/check-syntax.js",

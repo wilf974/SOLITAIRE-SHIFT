@@ -45,6 +45,7 @@ export function defaultProfile() {
     bestTimedMs: null,
     bestTide: 0,
     difficulty: 'standard', // last chosen difficulty level
+    battle: { defeated: [], bestCombo: 0, wins: 0, losses: 0 },
   };
 }
 
@@ -98,6 +99,9 @@ function migrate(p) {
   if (!Number.isFinite(p.adventure.chapter)) p.adventure.chapter = 0;
   if (!Number.isFinite(p.bestTide)) p.bestTide = 0;
   if (typeof p.difficulty !== 'string') p.difficulty = 'standard';
+  if (!p.battle || typeof p.battle !== 'object') p.battle = { defeated: [], bestCombo: 0, wins: 0, losses: 0 };
+  if (!Array.isArray(p.battle.defeated)) p.battle.defeated = [];
+  if (!Number.isFinite(p.battle.bestCombo)) p.battle.bestCombo = 0;
 
   if (p.version !== SCHEMA_VERSION) p.version = SCHEMA_VERSION;
   return p;

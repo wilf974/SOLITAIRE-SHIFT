@@ -5,7 +5,7 @@
 // dropped on activate. Nothing here talks to a server: there is no telemetry,
 // no account, and no remote save.
 
-const CACHE_VERSION = 'solitaire-shift-v3';
+const CACHE_VERSION = 'solitaire-shift-v4';
 
 // Everything the game needs to boot and play. Art is added on demand below.
 const CORE = [
@@ -26,6 +26,8 @@ const CORE = [
   './src/engine/solver.js',
   './src/engine/serialize.js',
   './src/engine/powers-fx.js',
+  './src/engine/battle.js',
+  './src/engine/battle-powers.js',
   './src/meta/storage.js',
   './src/meta/mastery.js',
   './src/meta/powers.js',
@@ -34,6 +36,7 @@ const CORE = [
   './src/ui/interaction.js',
   './src/ui/audio.js',
   './src/ui/art.js',
+  './src/ui/voice.js',
   './src/data/contracts.json',
   './src/assets/art/manifest.json',
   './src/assets/icons/ui/power-peek.png',
@@ -56,6 +59,16 @@ const CORE = [
   './src/assets/icons/ui/diff-sharp.png',
   './src/assets/icons/ui/diff-suited.png',
   './src/assets/icons/ui/diff-brutal.png',
+  './src/assets/icons/ui/mode-battle.png',
+  './src/assets/icons/ui/battle-strike.png',
+  './src/assets/icons/ui/battle-guard.png',
+  './src/assets/icons/ui/battle-focus.png',
+  './src/assets/icons/ui/battle-surge.png',
+  './src/assets/icons/ui/boss-gardien.png',
+  './src/assets/icons/ui/boss-illusionniste.png',
+  './src/assets/icons/ui/boss-horloger.png',
+  './src/assets/icons/ui/boss-souveraine.png',
+  './src/assets/voice/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {

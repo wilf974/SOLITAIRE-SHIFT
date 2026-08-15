@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "model": "eleven_multilingual_v2",
+  "entries": {
+    "boss-gardien-enter": {
+      "file": "boss-gardien-enter.mp3",
+      "hash": "521bc039779b01c3",
+      "text": "Rien ne passe. Rien ne bouge. Vous non plus.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 45601
+    },
+    "boss-gardien-win": {
+      "file": "boss-gardien-win.mp3",
+      "hash": "994112d3f5425cb8",
+      "text": "La pierre ne cède jamais.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 24703
+    },
+    "boss-gardien-lose": {
+      "file": "boss-gardien-lose.mp3",
+      "hash": "c9d4044711771cf3",
+      "text": "Impossible… vous m’avez… déplacé.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 45601
+    },
+    "boss-illusionniste-enter": {
+      "file": "boss-illusionniste-enter.mp3",
+      "hash": "b85258611c433f07",
+      "text": "Regardez bien. Ou plutôt, ne regardez pas.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 55214
+    },
+    "boss-illusionniste-win": {
+      "file": "boss-illusionniste-win.mp3",
+      "hash": "2f6ce676470e76bf",
+      "text": "Vous avez vu ce que je voulais que vous voyiez.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 43511
+    },
+    "boss-illusionniste-lose": {
+      "file": "boss-illusionniste-lose.mp3",
+      "hash": "5522aaf7727c6956",
+      "text": "Vous avez percé le truc. Bravo, sincèrement.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 53124
+    },
+    "boss-horloger-enter": {
+      "file": "boss-horloger-enter.mp3",
+      "hash": "ae2628816af5217d",
+      "text": "Chaque seconde vous appartient de moins en moins.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 55214
+    },
+    "boss-horloger-win": {
+      "file": "boss-horloger-win.mp3",
+      "hash": "b33c5955fa87c200",
+      "text": "Le temps était de mon côté. Il l’est toujours.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 50199
+    },
+    "boss-horloger-lose": {
+      "file": "boss-horloger-lose.mp3",
+      "hash": "c3325716f3485135",
+      "text": "Vous avez battu l’horloge. Cela n’arrive jamais.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 47691
+    },
+    "boss-souveraine-enter": {
+      "file": "boss-souveraine-enter.mp3",
+      "hash": "770045b459e91944",
+      "text": "Vous jouez sur ma table. N’oubliez pas.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 35988
+    },
+    "boss-souveraine-win": {
+      "file": "boss-souveraine-win.mp3",
+      "hash": "6101a710a997b9c5",
+      "text": "La partie est terminée. Elle l’était avant de commencer.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 53124
+    },
+    "boss-souveraine-lose": {
+      "file": "boss-souveraine-lose.mp3",
+      "hash": "df8b2f4893efbbe5",
+      "text": "La table est à vous. Prenez-en soin.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 38078
+    },
+    "battle-combo": {
+      "file": "battle-combo.mp3",
+      "hash": "706dc27249bae00f",
+      "text": "Enchaînement !",
+      "voiceId": "4p5WXd3ZuWR9pPtRQuxC",
+      "bytes": 17598
+    },
+    "battle-victory": {
+      "file": "battle-victory.mp3",
+      "hash": "88d773c4c9328647",
+      "text": "Boss vaincu.",
+      "voiceId": "4p5WXd3ZuWR9pPtRQuxC",
+      "bytes": 20524
+    },
+    "battle-defeat": {
+      "file": "battle-defeat.mp3",
+      "hash": "f6fbce9ac2a32704",
+      "text": "Vous êtes tombé.",
+      "voiceId": "4p5WXd3ZuWR9pPtRQuxC",
+      "bytes": 24285
+    }
+  }
+}

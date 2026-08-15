@@ -11,6 +11,7 @@ import { BoardRenderer } from './ui/render.js';
 import { Controller } from './ui/interaction.js';
 import { audio } from './ui/audio.js';
 import { loadArt, tableArtUrl, artCount } from './ui/art.js';
+import { loadVoice, say, setVoiceMuted, stopVoice, voiceCount } from './ui/voice.js';
 import {
   POWERS, getPower, shopList, chargesOf, buyCharges, spendCharge,
   coinsForResult, awardCoins, fmtCoins,
@@ -18,6 +19,13 @@ import {
 import { EFFECTS } from './engine/powers-fx.js';
 import { CHAPTERS } from './modes.js';
 import { DIFFICULTIES, getDifficulty, difficultyReward, supportsDifficulty } from './meta/difficulty.js';
+import {
+  BOSSES, getBoss, createBattle, afterMove as battleAfterMove,
+  movesUntilAttack, refillStock,
+} from './engine/battle.js';
+import {
+  BATTLE_POWERS, getBattlePower, tickCooldowns, isReady, useBattlePower,
+} from './engine/battle-powers.js';
 
 export class App {
   constructor() {
@@ -58,8 +66,10 @@ export class App {
     // are created with their illustrations already attached. If it's absent the
     // renderer falls back to programmatic CSS art and the game runs regardless.
     await loadArt();
+    await loadVoice();
     this.applyAppearance();
     audio.setMuted(this.profile.settings.muted);
+    setVoiceMuted(this.profile.settings.muted);
     this.bindTopbar();
     this.bindModalRoot();
     this.controller.bind(this.stageEl);
@@ -88,6 +98,12 @@ export class App {
   renderPowerBar() {
     const bar = document.getElementById('power-bar');
     if (!bar) return;
+    // In a duel the bar belongs to the battle abilities: they cost no charges,
+    // so a new player can fight a boss without having ground for coins.
+    if (this.game && this.game.battle && !this.game.battle.over) {
+      this.renderBattlePowers(bar);
+      return;
+    }
     const pw = this.profile.powers;
     const owned = POWERS.filter((p) => chargesOf(pw, p.id) > 0);
     const inHand = !!this.game && !this.game.won;
@@ -239,6 +255,7 @@ export class App {
 
   async startMode(mode, opts = {}) {
     this.stopAuto();
+    stopVoice();
     this.cancelReserve();
     this.closeModal();
     this.showSpinner('Distribution…');
@@ -249,6 +266,7 @@ export class App {
       this.deal = deal;
       this.mode = mode;
       this.game = createGame(deal.seed, makeRng(deal.seed), deal.rules);
+      if (mode === 'battle') this.game.battle = createBattle(deal.meta.bossId);
       this.game.startTime = Date.now();
       this.elapsedBase = 0;
       this.renderer.build(this.game);
@@ -257,6 +275,11 @@ export class App {
       this.renderer.measure();
       this.renderer.setBack(this.profile.activeBack);
       this.sync();
+      this.renderBattleHud();
+      if (mode === 'battle') {
+        // the taunt lands just after the deal settles
+        setTimeout(() => say(`boss-${deal.meta.bossId}-enter`), 450);
+      }
       this.startTimer();
       this.saveResume();
       const traitLine = deal.traits && deal.traits.length
@@ -295,9 +318,14 @@ export class App {
 
   do(move) {
     if (!this.game) return false;
+    // remember which card is heading home: the battle scores by rank
+    const homeCard = this.cardGoingHome(move);
     const ok = applyMove(this.game, move);
     if (!ok) { audio.invalid(); return false; }
     this.cueSound(move);
+
+    if (this.game.battle) return this.afterBattleMove(move, homeCard);
+
     this.sync();
     this.updateHUD();
     this.saveResume();
@@ -307,12 +335,44 @@ export class App {
     return true;
   }
 
+  /** The card a move is about to send to a foundation, if any. */
+  cardGoingHome(move) {
+    const g = this.game;
+    if (!g || !move) return null;
+    if (move.type === 'tab-to-foundation') return top(g.tableau[move.from]);
+    if (move.type === 'waste-to-foundation') return top(g.waste);
+    if (move.type === 'reserve-to-foundation') return g.reserve;
+    return null;
+  }
+
+  /** Battle mode: resolve the exchange, then keep the arena playable. */
+  afterBattleMove(move, homeCard) {
+    const g = this.game;
+    tickCooldowns(g.battle);
+    const res = battleAfterMove(g, move, homeCard);
+
+    // the stock is infinite in a duel: a battle ends by damage, never by stalling
+    if (!g.stock.length && !g.battle.over) {
+      refillStock(g, makeRng(g.seed + ':refill' + g.moves));
+    }
+
+    this.sync();
+    this.updateHUD();
+    this.renderBattleHud();
+    this.saveResume();
+
+    if (res) this.playBattleEvents(res.events);
+    if (g.battle.over) setTimeout(() => this.onBattleEnd(), 700);
+    return true;
+  }
+
   /**
    * The moment the hand becomes a formality — nothing hidden, nothing to
    * decide — finish it automatically instead of making the player click 52
    * more times. Announced with a toast so it never feels like a glitch.
    */
   maybeAutoFinish() {
+    if (this.game && this.game.battle) return; // a duel is never 'already won'
     if (this.autoRunning || !this.isTriviallyWon()) return;
     this.toast('Partie gagnée — ramassage automatique');
     setTimeout(() => {
@@ -647,6 +707,8 @@ export class App {
   showMenu() {
     this.stopTimer();
     this.stopAuto();
+    stopVoice();
+    this.renderBattleHud(); // clears it when there is no battle
     this._shopOpen = false;
     this.cancelReserve();
     this.game = null; // the board sits idle; nothing plays itself
@@ -654,6 +716,7 @@ export class App {
     const tp = tierProgress(p.xp);
     const advDone = p.adventure.cleared.length;
     const modes = [
+      { id: 'battle', ico: '⚔️', icon: 'mode-battle', t: 'Battle', d: `Affrontez des boss. ${(p.battle?.defeated || []).length}/${BOSSES.length} vaincus.`, locked: false, feature: true },
       { id: 'adventure', ico: '🗺️', icon: 'mode-adventure', t: 'Aventure', d: `Huit chapitres, huit règles. ${advDone}/${CHAPTERS.length} terminés.`, locked: false, feature: true },
       { id: 'timed', ico: '⏱️', icon: 'mode-timed', t: 'Chrono', d: p.bestTimedMs ? `Battez le temps. Record : ${fmtTime(p.bestTimedMs)}.` : 'Cinq minutes pour tout finir.', locked: false, feature: true },
       { id: 'tide', ico: '🌊', icon: 'mode-tide', t: 'Marée', d: `La mer monte et remplit vos colonnes. Record : ${p.bestTide || 0}/52.`, locked: false, feature: true },
@@ -699,7 +762,8 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
     root.querySelectorAll('[data-mode]').forEach((b) => {
       b.onclick = () => {
         const mode = b.dataset.mode;
-        if (mode === 'contract') this.showContractPicker();
+        if (mode === 'battle') this.showBossPicker();
+        else if (mode === 'contract') this.showContractPicker();
         else if (mode === 'ascension') this.showAscensionPicker();
         else if (mode === 'adventure') this.showAdventurePicker();
         else if (mode === 'timed') this.showTimedPicker();
@@ -804,6 +868,227 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
         next(id);
       };
     });
+  }
+
+  // ---------- battle mode ----------
+
+  showBossPicker() {
+    const p = this.profile;
+    const beaten = p.battle?.defeated || [];
+    const list = BOSSES.map((b, i) => {
+      // a boss unlocks once the previous one has fallen
+      const open = i === 0 || beaten.includes(BOSSES[i - 1].id);
+      const done = beaten.includes(b.id);
+      return `<button class="mode-card boss${done ? ' done' : ''}" data-boss="${b.id}" ${open ? '' : 'disabled'}>
+        ${open ? uiIcon(b.icon, b.emoji, 'ico') : '<span class="ico">🔒</span>'}
+        <span class="t">${b.name}</span>
+        <span class="d">${open ? b.taunt : 'Vainquez le boss précédent.'}</span>
+        <span class="chip"><span class="v">${b.hp} PV · frappe tous les ${b.attackEvery} coups</span></span>
+        ${done ? '<span class="reward">Vaincu</span>' : `<span class="reward">${b.reward} 🪙</span>`}
+      </button>`;
+    }).join('');
+
+    this.openModal(`<div class="panel">
+      <h2>Battle</h2>
+      <div class="sub">${beaten.length}/${BOSSES.length} boss vaincus</div>
+      <p class="note">Envoyez des cartes aux fondations pour frapper. Les coups
+      qui s'enchaînent forment un <strong>combo</strong> qui multiplie les dégâts.
+      Le boss riposte tous les N coups — pas au chronomètre, donc réfléchir ne
+      coûte rien. La pioche est infinie : le combat se termine aux points de vie.</p>
+      <div class="menu-grid">${list}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+    bindIconFallbacks(document.getElementById('modal-root'));
+    document.getElementById('modal-root').querySelectorAll('[data-boss]').forEach((b) => {
+      b.onclick = () => this.startMode('battle', { bossId: b.dataset.boss });
+    });
+  }
+
+  /** The health bars, combo counter and battle abilities. */
+  renderBattleHud() {
+    const bar = document.getElementById('battle-hud');
+    if (!bar) return;
+    const g = this.game;
+    if (!g || !g.battle) { bar.innerHTML = ''; bar.classList.remove('on'); return; }
+
+    const b = g.battle;
+    const boss = getBoss(b.bossId);
+    const bossPct = Math.max(0, Math.round((b.bossHp / b.bossMaxHp) * 100));
+    const playerPct = Math.max(0, Math.round((b.playerHp / b.playerMaxHp) * 100));
+    const until = movesUntilAttack(b);
+
+    bar.classList.add('on');
+    bar.innerHTML = `
+      <div class="bt-side bt-boss">
+        <div class="bt-face">${uiIcon(boss.icon, boss.emoji, 'ico')}</div>
+        <div class="bt-meter">
+          <div class="bt-name">${boss.name}</div>
+          <div class="bt-track"><div class="bt-fill boss" style="width:${bossPct}%"></div></div>
+          <div class="bt-num">${b.bossHp} / ${b.bossMaxHp}</div>
+        </div>
+      </div>
+
+      <div class="bt-mid">
+        ${b.combo > 1 ? `<div class="bt-combo">Combo ×${b.combo}</div>` : ''}
+        <div class="bt-warn${until <= 1 ? ' soon' : ''}">
+          ${b.guarded ? 'Garde active' : `Riposte dans ${until}`}
+        </div>
+      </div>
+
+      <div class="bt-side bt-player">
+        <div class="bt-meter">
+          <div class="bt-name">Vous</div>
+          <div class="bt-track"><div class="bt-fill you" style="width:${playerPct}%"></div></div>
+          <div class="bt-num">${b.playerHp} / ${b.playerMaxHp}</div>
+        </div>
+      </div>
+    `;
+    bindIconFallbacks(bar);
+  }
+
+  /** Battle abilities live in the power bar while a duel is running. */
+  renderBattlePowers(bar) {
+    const b = this.game.battle;
+    bar.innerHTML = BATTLE_POWERS.map((p) => {
+      const cd = (b.cooldowns && b.cooldowns[p.id]) || 0;
+      const ready = cd <= 0 && !b.over;
+      return `<button class="power-btn battle${ready ? '' : ' dead'}" data-battle-power="${p.id}"
+        title="${p.name} — ${p.desc}" ${ready ? '' : 'disabled'}>
+        ${uiIcon(p.icon, p.emoji)}
+        <span class="nm">${p.name}</span>
+        ${cd > 0 ? `<span class="chg cd">${cd}</span>` : ''}
+      </button>`;
+    }).join('');
+    bindIconFallbacks(bar);
+    bar.querySelectorAll('[data-battle-power]').forEach((btn) => {
+      btn.onclick = () => this.useBattleAbility(btn.dataset.battlePower);
+    });
+  }
+
+  useBattleAbility(id) {
+    const g = this.game;
+    if (!g || !g.battle || g.battle.over) { audio.invalid(); return; }
+    const res = useBattlePower(g, id);
+    if (!res.ok) { audio.invalid(); this.toast(res.reason || 'Impossible'); return; }
+
+    audio.unlock();
+    const power = getBattlePower(id);
+    if (res.damage) this.toast(`${power.name} — ${res.damage} dégâts`);
+    else if (res.revealed) this.toast(`${power.name} — ${res.revealed} carte(s) révélée(s)`);
+    else if (id === 'guard') this.toast('Garde active : la prochaine attaque est bloquée');
+
+    this.sync();
+    this.renderBattleHud();
+    this.saveResume();
+    if (g.battle.over) setTimeout(() => this.onBattleEnd(), 700);
+  }
+
+  /** Animate what just happened in the exchange. */
+  playBattleEvents(events) {
+    if (!events || !events.length) return;
+    for (const e of events) {
+      if (e.type === 'hit') {
+        audio.foundation();
+        this.floatDamage(`-${e.damage}`, 'boss');
+        if (e.combo > 1) this.flashCombo(e.combo);
+        // only call out a genuinely big chain, or it becomes noise
+        if (e.combo === 5) say('battle-combo');
+      } else if (e.type === 'boss-attack') {
+        audio.invalid();
+        this.floatDamage(`-${e.damage}`, 'you');
+        document.body.classList.add('boss-strike');
+        setTimeout(() => document.body.classList.remove('boss-strike'), 420);
+      } else if (e.type === 'guarded') {
+        this.toast('Attaque bloquée');
+      } else if (e.type === 'combo-broken') {
+        this.toast(`Combo ×${e.combo} brisé !`);
+      } else if (e.type === 'veiled') {
+        this.toast('Une carte a été masquée');
+      } else if (e.type === 'flooded') {
+        this.toast('La Souveraine inonde le tableau');
+      }
+    }
+  }
+
+  floatDamage(text, side) {
+    const hud = document.getElementById('battle-hud');
+    if (!hud) return;
+    const el = document.createElement('div');
+    el.className = `dmg-float ${side}`;
+    el.textContent = text;
+    hud.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  flashCombo(n) {
+    const hud = document.getElementById('battle-hud');
+    if (!hud) return;
+    const el = document.createElement('div');
+    el.className = 'combo-pop';
+    el.textContent = `×${n}`;
+    hud.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  /** Victory or defeat against a boss. */
+  onBattleEnd() {
+    const g = this.game;
+    if (!g || !g.battle) return;
+    const b = g.battle;
+    const boss = getBoss(b.bossId);
+    const p = this.profile;
+
+    if (!p.battle) p.battle = { defeated: [], bestCombo: 0, wins: 0, losses: 0 };
+    p.battle.bestCombo = Math.max(p.battle.bestCombo || 0, b.bestCombo);
+
+    let coins = 0;
+    if (b.won) {
+      p.battle.wins = (p.battle.wins || 0) + 1;
+      if (!p.battle.defeated.includes(boss.id)) p.battle.defeated.push(boss.id);
+      coins = boss.reward;
+      awardCoins(p.powers, coins);
+      audio.victory();
+      say(`boss-${boss.id}-lose`);   // the boss concedes
+      this.victoryAnimation();
+    } else {
+      p.battle.losses = (p.battle.losses || 0) + 1;
+      say(`boss-${boss.id}-win`);    // the boss gloats
+      // a loss still pays a little, scaled by how far you got
+      coins = Math.max(10, Math.round(boss.reward * 0.25 * (1 - b.bossHp / b.bossMaxHp)));
+      awardCoins(p.powers, coins);
+    }
+    p.history.resume = null;
+    saveProfile(this.profile);
+    this.updateCoins();
+
+    const nextIdx = BOSSES.findIndex((x) => x.id === boss.id) + 1;
+    const next = BOSSES[nextIdx];
+    const unlocked = b.won && next && !p.battle.defeated.includes(next.id);
+
+    this.openModal(`<div class="panel victory">
+      <div class="title">${b.won ? 'Boss vaincu !' : 'Vous êtes tombé'}</div>
+      <div class="sub">${boss.name}</div>
+      <div class="coin-hero">+${fmtCoins(coins)} <span>🪙</span></div>
+      <div class="stats" style="margin:14px 0">
+        <div class="row"><span class="k">Dégâts infligés</span><span class="v">${b.damageDealt}</span></div>
+        <div class="row"><span class="k">Dégâts subis</span><span class="v">${b.damageTaken}</span></div>
+        <div class="row"><span class="k">Meilleur combo</span><span class="v">×${b.bestCombo}</span></div>
+        <div class="row"><span class="k">Coups joués</span><span class="v">${g.moves}</span></div>
+      </div>
+      ${unlocked ? `<p class="note">Nouveau boss débloqué : <strong>${next.name}</strong>.</p>` : ''}
+      ${!b.won ? '<p class="note">Astuce : enchaînez les fondations sans interruption — un combo ×3 triple vos dégâts.</p>' : ''}
+      <div class="btn-row">
+        <button class="btn ghost" data-act="menu">Menu</button>
+        <button class="btn primary" data-act="again">${b.won ? 'Boss suivant' : 'Réessayer'}</button>
+      </div>
+    </div>`);
+
+    const root = document.getElementById('modal-root');
+    root.querySelector('[data-act="menu"]').onclick = () => this.showMenu();
+    root.querySelector('[data-act="again"]').onclick = () => {
+      const target = (b.won && next) ? next.id : boss.id;
+      this.startMode('battle', { bossId: target });
+    };
   }
 
   // ---------- new mode pickers ----------
@@ -984,7 +1269,7 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
         <button class="btn ghost" data-close>Retour</button>
       </div></div>`);
     const root = document.getElementById('modal-root');
-    root.querySelector('#set-mute').onchange = (e) => { p.settings.muted = !e.target.checked; audio.setMuted(p.settings.muted); saveProfile(p); };
+    root.querySelector('#set-mute').onchange = (e) => { p.settings.muted = !e.target.checked; audio.setMuted(p.settings.muted); setVoiceMuted(p.settings.muted); saveProfile(p); };
     root.querySelector('#set-motion').onchange = (e) => { p.settings.reduceMotion = e.target.checked; document.documentElement.classList.toggle('reduce-motion', e.target.checked); saveProfile(p); };
     root.querySelector('[data-act="export"]').onclick = () => { navigator.clipboard.writeText(exportProfile(p)); this.toast('Sauvegarde copiée dans le presse-papiers'); };
     root.querySelector('[data-act="import"]').onclick = () => { const s = prompt('Collez la sauvegarde exportée :'); if (s) { try { this.profile = importProfile(s); saveProfile(this.profile); this.applyAppearance(); this.showMenu(); this.toast('Importée'); } catch(e){ this.toast('Sauvegarde invalide'); } } };
@@ -1097,6 +1382,7 @@ function modeLabel(m) {
   return {
     classic: 'Classique', journey: 'Parcours', daily: 'Donne du jour', contract: 'Contrat',
     ascension: 'Ascension', zen: 'Zen', adventure: 'Aventure', timed: 'Chrono', tide: 'Marée',
+    battle: 'Battle',
   }[m] || m;
 }
 /**

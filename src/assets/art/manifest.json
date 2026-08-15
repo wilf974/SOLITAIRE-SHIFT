@@ -388,6 +388,87 @@
       "suit": null,
       "rank": null,
       "bytes": 970699
+    },
+    "boss-gardien": {
+      "file": "boss-gardien.png",
+      "hash": "37a7591108e845cb",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1522531
+    },
+    "boss-illusionniste": {
+      "file": "boss-illusionniste.png",
+      "hash": "2276239d75c83167",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1616977
+    },
+    "boss-horloger": {
+      "file": "boss-horloger.png",
+      "hash": "4dee842f295c3e00",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1533049
+    },
+    "boss-souveraine": {
+      "file": "boss-souveraine.png",
+      "hash": "d88d4fc20a10adc1",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1422543
+    },
+    "battle-strike": {
+      "file": "battle-strike.png",
+      "hash": "6925824b2ac48a70",
+      "kind": "battle-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1260049
+    },
+    "battle-guard": {
+      "file": "battle-guard.png",
+      "hash": "1c9841785e781aeb",
+      "kind": "battle-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1271601
+    },
+    "battle-focus": {
+      "file": "battle-focus.png",
+      "hash": "dd55a2a567c30bd9",
+      "kind": "battle-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1125451
+    },
+    "battle-surge": {
+      "file": "battle-surge.png",
+      "hash": "a3e7be4b60cf2321",
+      "kind": "battle-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1338118
+    },
+    "mode-battle": {
+      "file": "mode-battle.png",
+      "hash": "e783326f3e4b76fe",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1479302
     }
   }
 }

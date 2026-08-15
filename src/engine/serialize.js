@@ -14,6 +14,7 @@ export function serialize(state) {
     stockPasses: state.stockPasses,
     score: state.score,
     won: state.won,
+    battle: state.battle || null,
     // history stored as compact snapshots; capped to last 64 for resume
     history: state.history.slice(-64),
   };
@@ -32,6 +33,7 @@ export function deserialize(snap) {
     stockPasses: snap.stockPasses || 0,
     score: snap.score || 0,
     won: !!snap.won,
+    battle: snap.battle || null,
     history: snap.history || [],
     startTime: null,
     elapsedMs: snap.elapsedMs || 0,

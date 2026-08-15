@@ -295,11 +295,65 @@ export function difficultyIconPrompts() {
   }));
 }
 
+/**
+ * Battle mode art: the four bosses and the four combat abilities.
+ * Bosses are characters with a readable silhouette — they appear at ~40px in
+ * the health bar, so personality has to survive the shrink.
+ */
+export function battlePrompts() {
+  const BOSSES = [
+    ['boss-gardien', 'A stout stone-golem guardian carved from turquoise rock, arms crossed, one glowing eye, moss on its shoulders. Stoic and immovable, more grumpy than frightening. Palette: turquoise stone, mint moss and cream.'],
+    ['boss-illusionniste', 'A theatrical masked illusionist with a wide grin-mask held on a stick, a swirl of playing cards fanning around, purple cape. Mischievous, not menacing. Palette: violet, magenta and gold.'],
+    ['boss-horloger', 'A clockmaker figure whose chest is an open pocket-watch with visible gears, brass goggles, a pendulum swinging beside. Precise and severe. Palette: brass gold, deep blue and cream.'],
+    ['boss-souveraine', 'A regal queen on a throne of stacked playing cards, tall crown, flowing crimson robe, chin raised imperiously. Commanding and grand. Palette: crimson, gold and deep navy.'],
+  ];
+
+  const ABILITIES = [
+    ['battle-strike', 'A glossy cartoon sword striking downward with a bright impact flash and speed lines. Palette: coral red, sunny yellow and white.'],
+    ['battle-guard', 'A chunky rounded shield seen head-on with a soft protective glow around it. Palette: sky blue, deep blue and white.'],
+    ['battle-focus', 'A swirling spiral of concentration with a bright eye at its centre and small sparkles. Palette: violet, turquoise and white.'],
+    ['battle-surge', 'A bold lightning bolt with several playing cards flying upward around it in a burst. Palette: sunny yellow, tangerine and white.'],
+  ];
+
+  const bosses = BOSSES.map(([id, subject]) => ({
+    id, kind: 'boss', size: '1024x1024',
+    prompt: [
+      `Cute cartoon character portrait of a game boss: ${subject}`,
+      'Waist-up, centered, big readable silhouette, facing the viewer.',
+      'Formidable but charming — a boss a player enjoys losing to once.',
+      'Plain flat white background, no scene, no frame, no border.',
+      STYLE, NEG,
+    ].join(' '),
+  }));
+
+  const abilities = ABILITIES.map(([id, subject]) => ({
+    id, kind: 'battle-icon', size: '1024x1024',
+    prompt: [subject, SMALL_ICON_STYLE, NEG].join(' '),
+  }));
+
+  return [...bosses, ...abilities];
+}
+
+/** The Battle entry in the main menu. */
+export function battleModeIconPrompt() {
+  return [{
+    id: 'mode-battle',
+    kind: 'mode-icon',
+    size: '1024x1024',
+    prompt: [
+      'Two crossed cartoon swords in front of a playing card, with a small burst behind them.',
+      'Palette: coral red, sunny yellow and deep navy.',
+      SMALL_ICON_STYLE, NEG,
+    ].join(' '),
+  }];
+}
+
 /** Everything, in generation order (cheap/high-impact first). */
 export function allPrompts() {
   return [
     ...tablePrompts(), ...iconPrompts(), ...bannerPrompts(),
     ...powerIconPrompts(), ...modeIconPrompts(), ...difficultyIconPrompts(),
+    ...battlePrompts(), ...battleModeIconPrompt(),
     ...backPrompts(), ...acePrompts(), ...courtPrompts(),
   ];
 }
@@ -308,5 +362,6 @@ export const GROUPS = {
   table: tablePrompts, back: backPrompts, ace: acePrompts,
   court: courtPrompts, icon: iconPrompts, banner: bannerPrompts,
   power: powerIconPrompts, mode: modeIconPrompts, difficulty: difficultyIconPrompts,
+  battle: () => [...battlePrompts(), ...battleModeIconPrompt()],
   all: allPrompts,
 };
