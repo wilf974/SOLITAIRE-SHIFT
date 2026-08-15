@@ -52,6 +52,35 @@ test('the same card hits harder inside a combo', () => {
 
 // ---------- bosses ----------
 
+test('there are twenty bosses', () => {
+  assert.equal(BOSSES.length, 20);
+  assert.equal(new Set(BOSSES.map((b) => b.id)).size, 20, 'ids are unique');
+  assert.equal(new Set(BOSSES.map((b) => b.icon)).size, 20, 'icons are unique');
+});
+
+test('the roster rotates its pressures instead of only scaling numbers', () => {
+  // Every ability must appear more than once, at different cadences, or the
+  // later bosses are just the earlier ones with a bigger health bar.
+  const counts = {};
+  for (const b of BOSSES) counts[b.ability || 'none'] = (counts[b.ability || 'none'] || 0) + 1;
+  for (const [ability, n] of Object.entries(counts)) {
+    assert.ok(n >= 3, `${ability} appears ${n} time(s); it should recur`);
+  }
+  const cadences = new Set(BOSSES.map((b) => b.attackEvery));
+  assert.ok(cadences.size >= 4, 'attack cadence varies across the roster');
+});
+
+test('the difficulty curve stays sane', () => {
+  for (const b of BOSSES) {
+    // a boss that kills in under ~6 strikes leaves no room to learn it
+    const strikesToKill = b.playerHp / b.attackDamage;
+    assert.ok(strikesToKill >= 5, `${b.id} kills in ${strikesToKill.toFixed(1)} strikes`);
+  }
+  const first = BOSSES[0], last = BOSSES[BOSSES.length - 1];
+  assert.ok(last.hp / first.hp >= 4, 'the climb is real');
+  assert.ok(last.hp / first.hp <= 12, 'the climb is not absurd');
+});
+
 test('every boss is well formed and ordered by difficulty', () => {
   for (const b of BOSSES) {
     assert.ok(b.id && b.name && b.taunt, `${b.id} fields`);

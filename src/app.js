@@ -875,17 +875,41 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
   showBossPicker() {
     const p = this.profile;
     const beaten = p.battle?.defeated || [];
-    const list = BOSSES.map((b, i) => {
-      // a boss unlocks once the previous one has fallen
+
+    // Twenty bosses is too many for one flat grid, so they are grouped into
+    // acts. Only the act you are working on is expanded; the rest collapse to
+    // a single line, which keeps the screen readable on a phone.
+    const ACTS = [
+      { name: 'Acte I · Les Premiers Pas', from: 0,  to: 5 },
+      { name: 'Acte II · La Cour',          from: 5,  to: 10 },
+      { name: 'Acte III · Les Maîtres',     from: 10, to: 15 },
+      { name: 'Acte IV · La Couronne',      from: 15, to: 20 },
+    ];
+
+    const cardFor = (b, i) => {
       const open = i === 0 || beaten.includes(BOSSES[i - 1].id);
       const done = beaten.includes(b.id);
       return `<button class="mode-card boss${done ? ' done' : ''}" data-boss="${b.id}" ${open ? '' : 'disabled'}>
         ${open ? uiIcon(b.icon, b.emoji, 'ico') : '<span class="ico">🔒</span>'}
-        <span class="t">${b.name}</span>
+        <span class="t">${i + 1}. ${b.name}</span>
         <span class="d">${open ? b.taunt : 'Vainquez le boss précédent.'}</span>
-        <span class="chip"><span class="v">${b.hp} PV · frappe tous les ${b.attackEvery} coups</span></span>
-        ${done ? '<span class="reward">Vaincu</span>' : `<span class="reward">${b.reward} 🪙</span>`}
+        <span class="chip"><span class="v">${b.hp} PV · riposte tous les ${b.attackEvery} coups</span></span>
+        <span class="reward">${done ? 'Vaincu ✓' : `${b.reward} 🪙`}</span>
       </button>`;
+    };
+
+    // the act you are currently on is the one holding your next unbeaten boss
+    const nextIdx = BOSSES.findIndex((b) => !beaten.includes(b.id));
+    const currentAct = ACTS.findIndex((a) => nextIdx >= a.from && nextIdx < a.to);
+
+    const acts = ACTS.map((act, ai) => {
+      const slice = BOSSES.slice(act.from, act.to);
+      const cleared = slice.filter((b) => beaten.includes(b.id)).length;
+      const openAct = ai === (currentAct < 0 ? ACTS.length - 1 : currentAct);
+      return `<details class="act" ${openAct ? 'open' : ''}>
+        <summary>${act.name} <span class="act-count">${cleared}/${slice.length}</span></summary>
+        <div class="menu-grid">${slice.map((b, k) => cardFor(b, act.from + k)).join('')}</div>
+      </details>`;
     }).join('');
 
     this.openModal(`<div class="panel">
@@ -895,7 +919,7 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
       qui s'enchaînent forment un <strong>combo</strong> qui multiplie les dégâts.
       Le boss riposte tous les N coups — pas au chronomètre, donc réfléchir ne
       coûte rien. La pioche est infinie : le combat se termine aux points de vie.</p>
-      <div class="menu-grid">${list}</div>
+      ${acts}
       <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
     </div>`);
     bindIconFallbacks(document.getElementById('modal-root'));

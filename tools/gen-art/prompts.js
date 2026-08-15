@@ -303,9 +303,25 @@ export function difficultyIconPrompts() {
 export function battlePrompts() {
   const BOSSES = [
     ['boss-gardien', 'A stout stone-golem guardian carved from turquoise rock, arms crossed, one glowing eye, moss on its shoulders. Stoic and immovable, more grumpy than frightening. Palette: turquoise stone, mint moss and cream.'],
+    ['boss-apprenti', 'A young broom-wielding apprentice in an oversized cloak, sleeves too long, determined frown, a stack of cards tucked under one arm. Eager and slightly clumsy. Palette: sky blue, cream and soft yellow.'],
     ['boss-illusionniste', 'A theatrical masked illusionist with a wide grin-mask held on a stick, a swirl of playing cards fanning around, purple cape. Mischievous, not menacing. Palette: violet, magenta and gold.'],
+    ['boss-ferrailleur', 'A burly scrap-metal brawler with a blunt hammer over one shoulder, riveted armour plates, jaw set. Brutish and direct. Palette: iron grey, rust orange and cream.'],
     ['boss-horloger', 'A clockmaker figure whose chest is an open pocket-watch with visible gears, brass goggles, a pendulum swinging beside. Precise and severe. Palette: brass gold, deep blue and cream.'],
+    ['boss-corbeau', 'A sleek crow-masked thief in a feathered cloak, one gloved hand holding a stolen golden card, head tilted slyly. Palette: ink black, iridescent violet and gold.'],
+    ['boss-jumelles', 'Twin girls standing back to back in matching harlequin outfits, one smiling and one scowling, each holding a fan of cards. Palette: coral pink, teal and cream.'],
     ['boss-souveraine', 'A regal queen on a throne of stacked playing cards, tall crown, flowing crimson robe, chin raised imperiously. Commanding and grand. Palette: crimson, gold and deep navy.'],
+    ['boss-gardienne', 'A tall shield-maiden in polished plate, an enormous tower shield planted before her, calm unblinking stare. Palette: silver steel, sky blue and white.'],
+    ['boss-alchimiste', 'A hunched alchemist with round spectacles holding a bubbling green flask, vials strapped across the chest, a wisp of smoke curling. Palette: acid green, copper and cream.'],
+    ['boss-marionnettiste', 'A tall gaunt puppeteer holding a control bar, thin strings descending, a small card-puppet dangling below, faint smile. Palette: deep plum, dusty rose and cream.'],
+    ['boss-faucheur', 'A cloaked harvester carrying a curved scythe made of a giant playing card, wheat stalks at the belt, shadowed face with two calm eyes. Palette: wheat gold, dusk blue and cream.'],
+    ['boss-sirene', 'A mermaid perched on a rock, long flowing hair, singing with eyes closed, ribbons of water and cards spiralling around her. Palette: aqua, seafoam and pearl.'],
+    ['boss-colosse', 'An enormous armoured titan seen from the chest up, tiny head atop massive shoulders, fists like boulders. Palette: granite grey, ember orange and cream.'],
+    ['boss-archiviste', 'A stern librarian buried in scrolls and ledgers, quill behind the ear, one finger raised as if correcting you. Palette: parchment cream, ink blue and burgundy.'],
+    ['boss-astrologue', 'A robed stargazer peering through a brass telescope, constellations and small cards orbiting the head. Palette: midnight blue, starlight gold and violet.'],
+    ['boss-forgeron', 'A soot-covered blacksmith at an anvil, hammer raised, a molten crown glowing on the anvil, sparks flying. Palette: charcoal, molten orange and ember red.'],
+    ['boss-oracle', 'A blindfolded seer with arms outstretched, a third eye glowing on the forehead, cards floating in a halo around the head. Palette: pale gold, deep indigo and white.'],
+    ['boss-jumeau', 'A mirror-image duelist: a figure facing the viewer whose reflection ripples slightly out of sync, both holding identical cards. Palette: silver, glacier blue and white.'],
+    ['boss-croupier', 'An impeccably dressed eternal croupier in top hat and waistcoat, dealing cards that trail golden light, knowing half-smile. Palette: emerald green, gold and black.'],
   ];
 
   const ABILITIES = [

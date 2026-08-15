@@ -5,7 +5,7 @@
 // dropped on activate. Nothing here talks to a server: there is no telemetry,
 // no account, and no remote save.
 
-const CACHE_VERSION = 'solitaire-shift-v4';
+const CACHE_VERSION = 'solitaire-shift-v5';
 
 // Everything the game needs to boot and play. Art is added on demand below.
 const CORE = [
@@ -65,9 +65,25 @@ const CORE = [
   './src/assets/icons/ui/battle-focus.png',
   './src/assets/icons/ui/battle-surge.png',
   './src/assets/icons/ui/boss-gardien.png',
+  './src/assets/icons/ui/boss-apprenti.png',
   './src/assets/icons/ui/boss-illusionniste.png',
+  './src/assets/icons/ui/boss-ferrailleur.png',
   './src/assets/icons/ui/boss-horloger.png',
+  './src/assets/icons/ui/boss-corbeau.png',
+  './src/assets/icons/ui/boss-jumelles.png',
   './src/assets/icons/ui/boss-souveraine.png',
+  './src/assets/icons/ui/boss-gardienne.png',
+  './src/assets/icons/ui/boss-alchimiste.png',
+  './src/assets/icons/ui/boss-marionnettiste.png',
+  './src/assets/icons/ui/boss-faucheur.png',
+  './src/assets/icons/ui/boss-sirene.png',
+  './src/assets/icons/ui/boss-colosse.png',
+  './src/assets/icons/ui/boss-archiviste.png',
+  './src/assets/icons/ui/boss-astrologue.png',
+  './src/assets/icons/ui/boss-forgeron.png',
+  './src/assets/icons/ui/boss-oracle.png',
+  './src/assets/icons/ui/boss-jumeau.png',
+  './src/assets/icons/ui/boss-croupier.png',
   './src/assets/voice/manifest.json',
 ];
 

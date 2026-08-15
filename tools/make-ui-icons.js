@@ -29,7 +29,11 @@ const ICONS = [
   'diff-gentle', 'diff-standard', 'diff-sharp', 'diff-suited', 'diff-brutal',
   // battle mode
   'mode-battle', 'battle-strike', 'battle-guard', 'battle-focus', 'battle-surge',
-  'boss-gardien', 'boss-illusionniste', 'boss-horloger', 'boss-souveraine',
+  'boss-gardien', 'boss-apprenti', 'boss-illusionniste', 'boss-ferrailleur',
+  'boss-horloger', 'boss-corbeau', 'boss-jumelles', 'boss-souveraine',
+  'boss-gardienne', 'boss-alchimiste', 'boss-marionnettiste', 'boss-faucheur',
+  'boss-sirene', 'boss-colosse', 'boss-archiviste', 'boss-astrologue',
+  'boss-forgeron', 'boss-oracle', 'boss-jumeau', 'boss-croupier',
 ];
 
 const SIZE = 128;          // drawn at 26-34px, so 128 covers 4x displays

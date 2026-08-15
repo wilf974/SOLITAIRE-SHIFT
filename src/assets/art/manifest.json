@@ -469,6 +469,150 @@
       "suit": null,
       "rank": null,
       "bytes": 1479302
+    },
+    "boss-apprenti": {
+      "file": "boss-apprenti.png",
+      "hash": "61efae60eb71ac4e",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1448697
+    },
+    "boss-ferrailleur": {
+      "file": "boss-ferrailleur.png",
+      "hash": "1f0499dd531fd75a",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1579828
+    },
+    "boss-corbeau": {
+      "file": "boss-corbeau.png",
+      "hash": "3dffd5a890d89256",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1441996
+    },
+    "boss-jumelles": {
+      "file": "boss-jumelles.png",
+      "hash": "24d17306d1b52fa7",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1630823
+    },
+    "boss-gardienne": {
+      "file": "boss-gardienne.png",
+      "hash": "529df556bcbd8437",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1464529
+    },
+    "boss-alchimiste": {
+      "file": "boss-alchimiste.png",
+      "hash": "215b32777d68f0b6",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1726916
+    },
+    "boss-marionnettiste": {
+      "file": "boss-marionnettiste.png",
+      "hash": "2ec53131853345ad",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1516318
+    },
+    "boss-faucheur": {
+      "file": "boss-faucheur.png",
+      "hash": "09b898834b1ae804",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1591316
+    },
+    "boss-sirene": {
+      "file": "boss-sirene.png",
+      "hash": "0684934ac81afd3d",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1462694
+    },
+    "boss-colosse": {
+      "file": "boss-colosse.png",
+      "hash": "7f48e8a19dc4c505",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1701391
+    },
+    "boss-archiviste": {
+      "file": "boss-archiviste.png",
+      "hash": "0fe7ffc5acbda528",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1561749
+    },
+    "boss-astrologue": {
+      "file": "boss-astrologue.png",
+      "hash": "950a9cb71bf76cc2",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1765192
+    },
+    "boss-forgeron": {
+      "file": "boss-forgeron.png",
+      "hash": "3ebf0c25e5623003",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1670251
+    },
+    "boss-oracle": {
+      "file": "boss-oracle.png",
+      "hash": "0bd4c32a0085813d",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1682358
+    },
+    "boss-jumeau": {
+      "file": "boss-jumeau.png",
+      "hash": "8cd9b818e2207e1e",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1672685
+    },
+    "boss-croupier": {
+      "file": "boss-croupier.png",
+      "hash": "f5ba3ae3698502a1",
+      "kind": "boss",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1342726
     }
   }
 }

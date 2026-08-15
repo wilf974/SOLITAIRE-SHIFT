@@ -106,6 +106,342 @@
       "text": "Vous êtes tombé.",
       "voiceId": "4p5WXd3ZuWR9pPtRQuxC",
       "bytes": 24285
+    },
+    "boss-apprenti-enter": {
+      "file": "boss-apprenti-enter.mp3",
+      "hash": "a2cfb9fb0c583d8d",
+      "text": "Je débute, mais je frappe déjà plus vite que vous.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 40586
+    },
+    "boss-apprenti-win": {
+      "file": "boss-apprenti-win.mp3",
+      "hash": "e616679c7bed536c",
+      "text": "Même un apprenti peut vous battre. Réfléchissez à ça.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 52288
+    },
+    "boss-apprenti-lose": {
+      "file": "boss-apprenti-lose.mp3",
+      "hash": "1c1e17709e7d910d",
+      "text": "Bon. J’ai encore des choses à apprendre.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 38914
+    },
+    "boss-ferrailleur-enter": {
+      "file": "boss-ferrailleur-enter.mp3",
+      "hash": "696973329a37e391",
+      "text": "Vous cognez fort. Moi aussi.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 32226
+    },
+    "boss-ferrailleur-win": {
+      "file": "boss-ferrailleur-win.mp3",
+      "hash": "e77d5b37c410a1a2",
+      "text": "Le métal plie. Vous aussi.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 34316
+    },
+    "boss-ferrailleur-lose": {
+      "file": "boss-ferrailleur-lose.mp3",
+      "hash": "e0c599ed76a81fd7",
+      "text": "Belle frappe. La prochaine sera pour moi.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 38914
+    },
+    "boss-corbeau-enter": {
+      "file": "boss-corbeau-enter.mp3",
+      "hash": "6422f3aa5af85796",
+      "text": "Ce qui brille, je le prends.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 27629
+    },
+    "boss-corbeau-win": {
+      "file": "boss-corbeau-win.mp3",
+      "hash": "f679d2b7a1a55072",
+      "text": "Votre chance est déjà dans mon nid.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 38078
+    },
+    "boss-corbeau-lose": {
+      "file": "boss-corbeau-lose.mp3",
+      "hash": "8b38b821d41f45cc",
+      "text": "Gardez-la. Elle ne valait rien.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 40586
+    },
+    "boss-jumelles-enter": {
+      "file": "boss-jumelles-enter.mp3",
+      "hash": "687ddb481e6d2040",
+      "text": "Deux fois plus de mains. Deux fois plus de coups.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 44347
+    },
+    "boss-jumelles-win": {
+      "file": "boss-jumelles-win.mp3",
+      "hash": "48020125978cfc51",
+      "text": "À deux contre une, ce n’était pas très équitable.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 46437
+    },
+    "boss-jumelles-lose": {
+      "file": "boss-jumelles-lose.mp3",
+      "hash": "698de35531eb6091",
+      "text": "On a perdu. Ensemble, au moins.",
+      "voiceId": "cgSgspJ2msm6clMCkdW9",
+      "bytes": 35988
+    },
+    "boss-gardienne-enter": {
+      "file": "boss-gardienne-enter.mp3",
+      "hash": "6c230d4a9a39f6c4",
+      "text": "Ma garde ne se lève jamais.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 25539
+    },
+    "boss-gardienne-win": {
+      "file": "boss-gardienne-win.mp3",
+      "hash": "b20b8bdbee41a226",
+      "text": "Vous vous êtes brisé sur mon bouclier.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 35152
+    },
+    "boss-gardienne-lose": {
+      "file": "boss-gardienne-lose.mp3",
+      "hash": "262112cc18bd38f9",
+      "text": "Vous avez trouvé la faille. Une seule suffisait.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 49363
+    },
+    "boss-alchimiste-enter": {
+      "file": "boss-alchimiste-enter.mp3",
+      "hash": "f9910a957ffdce2b",
+      "text": "Je transforme vos réussites en cendres.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 44765
+    },
+    "boss-alchimiste-win": {
+      "file": "boss-alchimiste-win.mp3",
+      "hash": "d726d4e69efc0b93",
+      "text": "Tout se dissout. Vous compris.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 39750
+    },
+    "boss-alchimiste-lose": {
+      "file": "boss-alchimiste-lose.mp3",
+      "hash": "abd4bae8bc86fa4a",
+      "text": "Ma formule était juste. Mon adversaire, non.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 51035
+    },
+    "boss-marionnettiste-enter": {
+      "file": "boss-marionnettiste-enter.mp3",
+      "hash": "de7c721860fd80f0",
+      "text": "Vos mains bougent. Ce sont mes fils.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 38078
+    },
+    "boss-marionnettiste-win": {
+      "file": "boss-marionnettiste-win.mp3",
+      "hash": "00c7bf9c231c64e3",
+      "text": "Vous avez très bien dansé.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 28465
+    },
+    "boss-marionnettiste-lose": {
+      "file": "boss-marionnettiste-lose.mp3",
+      "hash": "8db6e48c6dfcddfd",
+      "text": "Les fils sont coupés. Allez-y.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 35152
+    },
+    "boss-faucheur-enter": {
+      "file": "boss-faucheur-enter.mp3",
+      "hash": "297819411dd97f1c",
+      "text": "Je moissonne ce que vous semez.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 29301
+    },
+    "boss-faucheur-win": {
+      "file": "boss-faucheur-win.mp3",
+      "hash": "a9c153a6132d25bb",
+      "text": "La récolte était bonne.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 22613
+    },
+    "boss-faucheur-lose": {
+      "file": "boss-faucheur-lose.mp3",
+      "hash": "9d95cffda9ae2e6d",
+      "text": "Cette année, le champ est à vous.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 34316
+    },
+    "boss-sirene-enter": {
+      "file": "boss-sirene-enter.mp3",
+      "hash": "fa14c20b7721b032",
+      "text": "Écoutez encore un peu. Juste un peu.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 40586
+    },
+    "boss-sirene-win": {
+      "file": "boss-sirene-win.mp3",
+      "hash": "2264f4bf54804767",
+      "text": "Vous avez fermé les yeux. C’était l’erreur.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 41839
+    },
+    "boss-sirene-lose": {
+      "file": "boss-sirene-lose.mp3",
+      "hash": "d0e33edbd738aa8c",
+      "text": "Vous n’écoutiez pas. Tant mieux pour vous.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 41839
+    },
+    "boss-colosse-enter": {
+      "file": "boss-colosse-enter.mp3",
+      "hash": "77a34dd39abb5213",
+      "text": "Frappez. Je ne le sentirai pas.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 39750
+    },
+    "boss-colosse-win": {
+      "file": "boss-colosse-win.mp3",
+      "hash": "cbbf296f59c2ce3e",
+      "text": "Je n’ai rien senti du tout.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 24703
+    },
+    "boss-colosse-lose": {
+      "file": "boss-colosse-lose.mp3",
+      "hash": "9b08b8afc76a5206",
+      "text": "Là… j’ai senti quelque chose.",
+      "voiceId": "nPczCjzI2devNBz1zQrb",
+      "bytes": 35988
+    },
+    "boss-archiviste-enter": {
+      "file": "boss-archiviste-enter.mp3",
+      "hash": "a76289caba895140",
+      "text": "Chaque coup que vous jouez, je l’ai déjà lu.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 44765
+    },
+    "boss-archiviste-win": {
+      "file": "boss-archiviste-win.mp3",
+      "hash": "3bbafdddc9a257a5",
+      "text": "Votre partie est classée. Rangée. Oubliée.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 58140
+    },
+    "boss-archiviste-lose": {
+      "file": "boss-archiviste-lose.mp3",
+      "hash": "ff8e0be05ed47bf8",
+      "text": "Je vais devoir ajouter un chapitre.",
+      "voiceId": "onwK4e9ZLuTAKqWW03F9",
+      "bytes": 33898
+    },
+    "boss-astrologue-enter": {
+      "file": "boss-astrologue-enter.mp3",
+      "hash": "02b0507c6149b2e2",
+      "text": "Votre défaite était écrite. J’en ai lu la date.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 43511
+    },
+    "boss-astrologue-win": {
+      "file": "boss-astrologue-win.mp3",
+      "hash": "43071360781b18f0",
+      "text": "Les astres avaient raison, comme toujours.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 36824
+    },
+    "boss-astrologue-lose": {
+      "file": "boss-astrologue-lose.mp3",
+      "hash": "0c2af6794f39b314",
+      "text": "J’ai mal lu le ciel. Cela arrive une fois par siècle.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 53124
+    },
+    "boss-forgeron-enter": {
+      "file": "boss-forgeron-enter.mp3",
+      "hash": "78ebce17262ee8af",
+      "text": "Je refonds les rois en clous.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 27211
+    },
+    "boss-forgeron-win": {
+      "file": "boss-forgeron-win.mp3",
+      "hash": "137c960ea5aec366",
+      "text": "Encore du métal pour la forge.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 30973
+    },
+    "boss-forgeron-lose": {
+      "file": "boss-forgeron-lose.mp3",
+      "hash": "36adc223e8c9bdfa",
+      "text": "Vous avez tenu la chaleur. Peu y arrivent.",
+      "voiceId": "SOYHLrjzK2X1ezoPC6cr",
+      "bytes": 43511
+    },
+    "boss-oracle-enter": {
+      "file": "boss-oracle-enter.mp3",
+      "hash": "e11794ea84b40885",
+      "text": "Je ne vois rien. Je sais tout.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 32226
+    },
+    "boss-oracle-win": {
+      "file": "boss-oracle-win.mp3",
+      "hash": "6c007fedd2b46357",
+      "text": "Je l’avais annoncé. Vous n’avez pas écouté.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 44347
+    },
+    "boss-oracle-lose": {
+      "file": "boss-oracle-lose.mp3",
+      "hash": "92d9aaf8932d1c1a",
+      "text": "Ce que je n’avais pas vu, c’est vous.",
+      "voiceId": "Xb7hH8MSUJpSbSDYk0k2",
+      "bytes": 35152
+    },
+    "boss-jumeau-enter": {
+      "file": "boss-jumeau-enter.mp3",
+      "hash": "0e79f6b0926b3d65",
+      "text": "Vous savez déjà comment je joue.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 34316
+    },
+    "boss-jumeau-win": {
+      "file": "boss-jumeau-win.mp3",
+      "hash": "7c5fd362cfea654f",
+      "text": "Vous vous êtes battu contre vous-même. Vous avez perdu.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 60648
+    },
+    "boss-jumeau-lose": {
+      "file": "boss-jumeau-lose.mp3",
+      "hash": "dff914c2721a3c8f",
+      "text": "Vous êtes meilleur que moi. Donc meilleur que vous.",
+      "voiceId": "N2lVS1w4EtoT3dr4eOWO",
+      "bytes": 56886
+    },
+    "boss-croupier-enter": {
+      "file": "boss-croupier-enter.mp3",
+      "hash": "406559c58e7c058c",
+      "text": "La maison gagne toujours. Prouvez le contraire.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 52288
+    },
+    "boss-croupier-win": {
+      "file": "boss-croupier-win.mp3",
+      "hash": "085f02d867841d20",
+      "text": "La maison gagne. Comme toujours.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 39750
+    },
+    "boss-croupier-lose": {
+      "file": "boss-croupier-lose.mp3",
+      "hash": "2d86600b639df4f5",
+      "text": "La maison s’incline. Cela n’était jamais arrivé.",
+      "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+      "bytes": 47691
     }
   }
 }
