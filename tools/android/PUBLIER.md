@@ -106,6 +106,23 @@ Sur [play.google.com/console](https://play.google.com/console) :
 
 ---
 
+## Empreinte de votre clé de signature
+
+Celle de la clé locale (`solitaire-shift.keystore`, alias `solitaire`) :
+
+```
+SHA-256  D4:FD:54:0E:BF:AF:C8:EA:E0:BE:5D:0F:90:35:E7:EF:D3:67:36:7E:D7:15:A9:9B:44:1C:F0:4C:02:1F:2B:88
+```
+
+Utile pour vérifier qu'un `.aab` a bien été signé avec la bonne clé.
+
+> Note : Google resigne les apps avec **Play App Signing**. L'empreinte que
+> verront les utilisateurs sera donc différente — vous la trouverez après le
+> premier envoi dans **Configuration → Intégrité de l'app**. C'est celle-là
+> qu'il faudra utiliser si vous ajoutez un jour un `assetlinks.json`.
+
+---
+
 ## Après publication
 
 Les mises à jour peuvent être automatisées avec l'API Google Play Developer
