@@ -445,14 +445,20 @@ body.auto-finishing .power-bar { opacity: 0.5; pointer-events: none; }
 .mode-card.diff.chosen {
   box-shadow: 0 0 0 3px var(--gold), 0 3px 0 rgba(31,41,72,0.10), 0 10px 24px rgba(31,41,72,0.14);
 }
+/* The trait list can be long ("Même enseigne · Pioche par trois · Sans retour"),
+   so the chip wraps to as many lines as it needs instead of spilling out. */
 .mode-card .chip {
   align-self: flex-start;
+  max-width: 100%;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.35;
   color: var(--ink-soft);
   background: rgba(31,41,72,0.06);
-  padding: 3px 9px;
-  border-radius: 999px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- small screens ---------- */
