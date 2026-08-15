@@ -6,7 +6,7 @@ import { composeRules, difficultyValue, rewardMultiplier, TRAITS, getTrait } fro
 import { serialize, deserialize } from './engine/serialize.js';
 import { makeDeal, CONTRACTS, todayStr } from './modes.js';
 import { loadProfile, saveProfile, exportProfile, importProfile, defaultProfile } from './meta/storage.js';
-import { xpForResult, evaluateUnlocks, applyUnlocks, tierFromXp, tierProgress } from './meta/mastery.js';
+import { xpForResult, evaluateUnlocks, applyUnlocks, tierFromXp, tierProgress, UNLOCKS } from './meta/mastery.js';
 import { BoardRenderer } from './ui/render.js';
 import { Controller } from './ui/interaction.js';
 import { audio } from './ui/audio.js';
@@ -160,7 +160,7 @@ export class App {
     if (c) c.textContent = fmtCoins(idle.coins);
     if (r) {
       const cps = coinsPerSecond(idle);
-      r.textContent = cps > 0 ? `+${fmtCoins(cps)}/s` : 'idle';
+      r.textContent = cps > 0 ? `+${fmtCoins(cps)}/s` : 'au repos';
     }
     // live-refresh the shop if it's open
     if (this._shopOpen) this.renderShopBody();
@@ -171,11 +171,11 @@ export class App {
     this.openModal(`
       <div class="overlay"><div class="panel offline">
         <div class="big">🌙</div>
-        <h2>While you were away</h2>
-        <div class="sub">Your dealers kept playing for ${fmtDuration(away.elapsedMs)}</div>
+        <h2>Pendant votre absence</h2>
+        <div class="sub">Vos croupiers ont joué pendant ${fmtDuration(away.elapsedMs)}</div>
         <div class="coin-hero">+${fmtCoins(away.earned)} <span>🪙</span></div>
-        ${away.capped ? `<p class="note">Offline earnings are capped at ${OFFLINE_CAP_HOURS} hours — nothing is ever lost for being away longer.</p>` : ''}
-        <div class="btn-row"><button class="btn primary" data-act="collect">Collect</button></div>
+        ${away.capped ? `<p class="note">Les gains hors ligne sont plafonnés à ${OFFLINE_CAP_HOURS} heures — rien n'est jamais perdu si vous restez absent plus longtemps.</p>` : ''}
+        <div class="btn-row"><button class="btn primary" data-act="collect">Encaisser</button></div>
       </div></div>
     `);
     document.getElementById('modal-root').querySelector('[data-act="collect"]').onclick = () => {
@@ -224,7 +224,7 @@ export class App {
     this.stopDemo();
     this.demoGame = null;
     this.closeModal();
-    this.showSpinner('Dealing…');
+    this.showSpinner('Distribution…');
     // yield to let spinner paint before heavy solver work
     await new Promise((r) => setTimeout(r, 30));
     try {
@@ -245,7 +245,7 @@ export class App {
       this.toast(`${modeLabel(mode)}${deal.traits && deal.traits.length ? ' · ' + deal.traits.map(t => getTrait(t)?.name || t).join(', ') : ''}`);
     } catch (e) {
       console.error(e);
-      this.toast('Deal failed — try again');
+      this.toast('Échec de la donne — réessayez');
     } finally {
       this.hideSpinner();
     }
@@ -260,7 +260,7 @@ export class App {
       this.renderer.build(this.game);
       requestAnimationFrame(() => { this.renderer.measure(); this.renderer.setBack(this.profile.activeBack); this.sync(); });
       this.startTimer();
-      this.toast('Resumed');
+      this.toast('Partie reprise');
     } catch (e) {
       console.error(e);
       this.showMenu();
@@ -325,7 +325,7 @@ export class App {
   hint() {
     if (!this.game) return;
     const moves = legalMoves(this.game);
-    if (!moves.length) { this.toast('No moves — try the stock'); return; }
+    if (!moves.length) { this.toast('Aucun coup — piochez'); return; }
     // prefer a foundation move or one that reveals
     const m = moves.find((x) => x.type === 'tab-to-foundation' || x.type === 'waste-to-foundation')
       || moves.find((x) => x.type === 'tab-to-tab' && (() => { const s = this.game.tableau[x.from]; return s.length - x.count - 1 >= 0 && !s[s.length - x.count - 1].faceUp; })())
@@ -499,12 +499,12 @@ export class App {
     const p = this.profile;
     const tp = tierProgress(p.xp);
     const modes = [
-      { id: 'classic', ico: '♣', t: 'Classic', d: 'Pure Klondike. Random deal — the traditional gamble.', locked: false },
-      { id: 'journey', ico: '✦', t: 'Journey', d: 'The main path. Traits appear as you climb.', locked: false },
-      { id: 'daily', ico: '☉', t: 'Daily Deal', d: `One solvable deal a day — ${todayStr()}.`, locked: false },
-      { id: 'contract', ico: '❧', t: 'Contracts', d: 'Curated challenges with strange rules.', locked: p.tier < 2, lock: p.tier < 2 ? `Unlock at tier 2` : '' },
-      { id: 'ascension', ico: '△', t: 'Ascension', d: 'Win streaks that escalate. How high can you climb?', locked: p.tier < 3, lock: p.tier < 3 ? `Unlock at tier 3` : '' },
-      { id: 'zen', ico: '◐', t: 'Zen', d: 'Relaxed, always solvable. No pressure.', locked: false },
+      { id: 'classic', ico: '♣', t: 'Classique', d: 'Klondike pur. Donne aléatoire — le pari traditionnel.', locked: false },
+      { id: 'journey', ico: '✦', t: 'Parcours', d: 'La voie principale. Les traits arrivent en progressant.', locked: false },
+      { id: 'daily', ico: '☉', t: 'Donne du jour', d: `Une donne résoluble par jour — ${todayStr()}.`, locked: false },
+      { id: 'contract', ico: '❧', t: 'Contrats', d: 'Des défis choisis aux règles étranges.', locked: p.tier < 2, lock: p.tier < 2 ? `Rang 2 requis` : '' },
+      { id: 'ascension', ico: '△', t: 'Ascension', d: "Des séries de victoires qui montent. Jusqu'où irez-vous ?", locked: p.tier < 3, lock: p.tier < 3 ? `Rang 3 requis` : '' },
+      { id: 'zen', ico: '◐', t: 'Zen', d: 'Détendu, toujours résoluble. Aucune pression.', locked: false },
     ];
     const cards = modes.map((m) => `<button class="mode-card" data-mode="${m.id}" ${m.locked ? 'disabled' : ''}>
       <span class="ico">${m.ico}</span><span class="t">${m.t}</span><span class="d">${m.d}</span>${m.lock ? `<span class="lock">${m.lock}</span>` : ''}
@@ -512,23 +512,23 @@ export class App {
     this.openModal(`
       <div class="panel">
         <h2>SOLITAIRE: SHIFT</h2>
-        <div class="sub">Aurum &amp; Obsidian · Tier ${tp.tier}</div>
-        <div style="margin-bottom:14px"><div class="sub" style="margin-bottom:6px">Mastery · ${p.xp} XP</div>
+        <div class="sub">Rang ${tp.tier}</div>
+        <div style="margin-bottom:14px"><div class="sub" style="margin-bottom:6px">Maîtrise · ${p.xp} XP</div>
           <div style="height:8px;border-radius:99px;background:rgba(0,0,0,.3);overflow:hidden;border:1px solid var(--panel-border)">
             <div style="height:100%;width:${Math.round(tp.pct*100)}%;background:linear-gradient(90deg,var(--gold-deep),var(--gold-2))"></div>
           </div>
         </div>
         <button class="btn primary shop-cta" data-act="shop">
-          🪙 Card Room — <span id="menu-coins">${fmtCoins(p.idle.coins)}</span> coins
-          ${coinsPerSecond(p.idle) > 0 ? `<small>+${fmtCoins(coinsPerSecond(p.idle))}/s</small>` : '<small>hire your first dealer</small>'}
+          🪙 Salle de jeu — <span id="menu-coins">${fmtCoins(p.idle.coins)}</span> pièces
+          ${coinsPerSecond(p.idle) > 0 ? `<small>+${fmtCoins(coinsPerSecond(p.idle))}/s</small>` : '<small>engagez votre premier croupier</small>'}
         </button>
         <div class="menu-grid">${cards}</div>
         <div class="btn-row">
-          <button class="btn ghost" data-act="stats">Stats</button>
+          <button class="btn ghost" data-act="stats">Statistiques</button>
           <button class="btn ghost" data-act="traits">Traits</button>
           <button class="btn ghost" data-act="collection">Collection</button>
-          <button class="btn ghost" data-act="settings">Settings</button>
-          <button class="btn ghost" data-act="workbench">Workbench</button>
+          <button class="btn ghost" data-act="settings">Réglages</button>
+          <button class="btn ghost" data-act="workbench">Atelier</button>
         </div>
       </div>
     `);
@@ -561,22 +561,22 @@ export class App {
   showVictory(res) {
     const p = this.profile;
     const earned = this.lastEarned || [];
-    const reveal = earned.length ? earned.map((u) => `<div style="margin:6px 0"><strong style="color:var(--gold-2)">${u.name}</strong> <span style="color:var(--ink-soft)">— ${u.desc}</span></div>`).join('') : '<div style="color:var(--ink-soft)">Nothing new this time.</div>';
+    const reveal = earned.length ? earned.map((u) => `<div style="margin:6px 0"><strong style="color:var(--gold-2)">${u.name}</strong> <span style="color:var(--ink-soft)">— ${u.desc}</span></div>`).join('') : '<div style="color:var(--ink-soft)">Rien de neuf cette fois.</div>';
     this.openModal(`
       <div class="panel victory">
-        <div class="title">Victory!</div>
+        <div class="title">Victoire !</div>
         <div class="sub">${modeLabel(this.mode)} · +${this.lastXp} XP</div>
         <div class="coin-hero">+${fmtCoins(this.lastCoins || 0)} <span>🪙</span></div>
         <div class="stats" style="margin:14px 0">
-          <div class="row"><span class="k">Moves</span><span class="v">${res.moves}</span></div>
-          <div class="row"><span class="k">Time</span><span class="v">${fmtTime(res.timeMs)}</span></div>
+          <div class="row"><span class="k">Coups</span><span class="v">${res.moves}</span></div>
+          <div class="row"><span class="k">Temps</span><span class="v">${fmtTime(res.timeMs)}</span></div>
           <div class="row"><span class="k">Score</span><span class="v">${res.score}</span></div>
-          <div class="row"><span class="k">Streak</span><span class="v">${p.streak}</span></div>
+          <div class="row"><span class="k">Série</span><span class="v">${p.streak}</span></div>
         </div>
-        ${earned.length ? `<h3>Unlocked</h3>${reveal}` : ''}
+        ${earned.length ? `<h3>Déverrouillé</h3>${reveal}` : ''}
         <div class="btn-row">
           <button class="btn ghost" data-act="menu">Menu</button>
-          <button class="btn primary" data-act="again">Deal again</button>
+          <button class="btn primary" data-act="again">Rejouer</button>
         </div>
       </div>
     `);
@@ -589,12 +589,12 @@ export class App {
   showStuck(res) {
     this.openModal(`
       <div class="panel">
-        <h2>No moves left</h2>
-        <div class="sub">${modeLabel(this.mode)} · ${res.foundationCards}/52 on foundations</div>
-        <p style="color:var(--ink-soft);margin:12px 0">This deal is stuck. ${this.mode === 'classic' ? 'Classic deals are random — try again.' : 'It happens even on fair deals with hard traits.'}</p>
+        <h2>Plus aucun coup</h2>
+        <div class="sub">${modeLabel(this.mode)} · ${res.foundationCards}/52 aux fondations</div>
+        <p style="color:var(--ink-soft);margin:12px 0">Cette donne est bloquée. ${this.mode === 'classic' ? 'Les donnes Classiques sont aléatoires — réessayez.' : 'Cela arrive même sur une donne équitable avec des traits difficiles.'}</p>
         <div class="btn-row">
           <button class="btn ghost" data-act="menu">Menu</button>
-          <button class="btn primary" data-act="again">New deal</button>
+          <button class="btn primary" data-act="again">Nouvelle donne</button>
         </div>
       </div>
     `);
@@ -611,10 +611,10 @@ export class App {
         <span class="ico">❧</span><span class="t">${c.name}</span>
         <span class="d">${c.desc}</span>
         <span class="chip ${difficultyValue(c.traits)>=2?'hard':difficultyValue(c.traits)<0?'easy':''}"><span class="v">${fmtDiff(c.traits)}</span></span>
-        ${locked?`<span class="lock">Tier ${c.tier}</span>`:''}
+        ${locked?`<span class="lock">Rang ${c.tier}</span>`:''}
       </button>`;
     }).join('');
-    this.openModal(`<div class="panel"><h2>Contracts</h2><div class="sub">Curated challenges</div><div class="menu-grid">${list}</div><div class="btn-row"><button class="btn ghost" data-close>Back</button></div></div>`);
+    this.openModal(`<div class="panel"><h2>Contrats</h2><div class="sub">Des défis choisis</div><div class="menu-grid">${list}</div><div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
     document.getElementById('modal-root').querySelectorAll('[data-contract]').forEach((b) => b.onclick = () => this.startMode('contract', { contractId: b.dataset.contract }));
   }
 
@@ -622,9 +622,9 @@ export class App {
     const p = this.profile;
     const level = Math.max(1, p.ascension.bestLevel || 1);
     this.openModal(`<div class="panel">
-      <h2>Ascension</h2><div class="sub">Win to climb. Each level adds a harder trait.</div>
-      <p style="color:var(--ink-soft);margin:12px 0">Current best: level ${p.ascension.bestLevel||0}. Start a run at level ${level}.</p>
-      <div class="btn-row"><button class="btn ghost" data-close>Back</button><button class="btn primary" data-act="go">Begin at level ${level}</button></div>
+      <h2>Ascension</h2><div class="sub">Gagnez pour monter. Chaque niveau ajoute un trait plus dur.</div>
+      <p style="color:var(--ink-soft);margin:12px 0">Meilleur niveau : ${p.ascension.bestLevel||0}. Démarrer au niveau ${level}.</p>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button><button class="btn primary" data-act="go">Commencer au niveau ${level}</button></div>
     </div>`);
     document.getElementById('modal-root').querySelector('[data-act="go"]').onclick = () => this.startMode('ascension', { level });
   }
@@ -636,94 +636,95 @@ export class App {
       return `<div class="wb-card" style="${owned?'':'opacity:0.45'}">
         <div class="k">${t.name} <span class="chip ${t.value>0?'hard':t.value<0?'easy':''}"><span class="v">${t.value>0?'+':''}${t.value}</span></span></div>
         <div style="color:var(--ink-soft);font-size:12px;margin-top:4px">${t.desc}</div>
-        <div style="color:var(--ink-faint);font-size:10px;margin-top:6px;letter-spacing:.12em">${owned?'OWNED':`TIER ${t.tier}`}</div>
+        <div style="color:var(--ink-faint);font-size:10px;margin-top:6px;letter-spacing:.12em">${owned?'ACQUIS':`RANG ${t.tier}`}</div>
       </div>`;
     }).join('');
-    this.openModal(`<div class="panel"><h2>Traits</h2><div class="sub">${p.traitsUnlocked.length}/${TRAITS.length} unlocked</div><div class="wb-grid">${items}</div><div class="btn-row"><button class="btn ghost" data-close>Back</button></div></div>`);
+    this.openModal(`<div class="panel"><h2>Traits</h2><div class="sub">${p.traitsUnlocked.length}/${TRAITS.length} déverrouillés</div><div class="wb-grid">${items}</div><div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
   }
 
   showCollection() {
     const p = this.profile;
-    const backs = p.backs.map((b) => collItem(b.id, b.unlocked, b.id, 'back'));
-    const courts = p.courtFamilies.map((c) => collItem(c.id, c.unlocked, c.id, 'court'));
-    const themes = p.themes.map((t) => collItem(t.id, t.unlocked, t.id, 'theme'));
-    this.openModal(`<div class="panel"><h2>Collection</h2><div class="sub">Card backs, courts, themes</div>
-      <h3>Card Backs</h3><div class="collection">${backs.join('')}</div>
-      <h3>Court Families</h3><div class="collection">${courts.join('')}</div>
-      <h3>Themes</h3><div class="collection">${themes.join('')}</div>
-      <div class="btn-row"><button class="btn ghost" data-close>Back</button></div></div>`);
+    const backs = p.backs.map((b) => collItem(b.id, b.unlocked, collectibleName(b.id, 'back'), 'back'));
+    const courts = p.courtFamilies.map((c) => collItem(c.id, c.unlocked, collectibleName(c.id, 'court'), 'court'));
+    const themes = p.themes.map((t) => collItem(t.id, t.unlocked, collectibleName(t.id, 'theme'), 'theme'));
+    this.openModal(`<div class="panel"><h2>Collection</h2><div class="sub">Dos de cartes, figures, thèmes</div>
+      <h3>Dos de cartes</h3><div class="collection">${backs.join('')}</div>
+      <h3>Familles de figures</h3><div class="collection">${courts.join('')}</div>
+      <h3>Thèmes</h3><div class="collection">${themes.join('')}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
     document.getElementById('modal-root').querySelectorAll('[data-equip]').forEach((el) => {
       el.onclick = () => {
         const kind = el.dataset.equip, id = el.dataset.id;
+        if (el.classList.contains('locked')) { audio.invalid(); this.toast('Pas encore déverrouillé'); return; }
         if (kind === 'back') { this.profile.activeBack = id; this.renderer.setBack(id); }
         if (kind === 'theme') { this.profile.activeTheme = id; document.documentElement.dataset.theme = id; }
         if (kind === 'court') { this.profile.activeCourt = id; }
         saveProfile(this.profile);
-        this.toast('Equipped');
+        this.toast('Équipé');
       };
     });
   }
 
   showStats() {
     const p = this.profile, s = p.stats;
-    this.openModal(`<div class="panel"><h2>Statistics</h2><div class="sub">Lifetime</div>
+    this.openModal(`<div class="panel"><h2>Statistiques</h2><div class="sub">Depuis toujours</div>
       <div class="stats">
-        <div class="row"><span class="k">Games</span><span class="v">${p.gamesPlayed}</span></div>
-        <div class="row"><span class="k">Wins</span><span class="v">${p.wins}</span></div>
-        <div class="row"><span class="k">Win rate</span><span class="v">${p.gamesPlayed?Math.round(p.wins/p.gamesPlayed*100):0}%</span></div>
-        <div class="row"><span class="k">Best streak</span><span class="v">${p.bestStreak||0}</span></div>
-        <div class="row"><span class="k">Total moves</span><span class="v">${s.totalMoves}</span></div>
-        <div class="row"><span class="k">Total score</span><span class="v">${s.totalScore}</span></div>
-        <div class="row"><span class="k">Fastest win</span><span class="v">${s.fastestWinMs?fmtTime(s.fastestWinMs):'—'}</span></div>
-        <div class="row"><span class="k">Fewest moves</span><span class="v">${s.fewestMovesWin??'—'}</span></div>
-        <div class="row"><span class="k">Ascension best</span><span class="v">L${p.ascension.bestLevel||0}</span></div>
-        <div class="row"><span class="k">Tier</span><span class="v">${p.tier}</span></div>
+        <div class="row"><span class="k">Parties</span><span class="v">${p.gamesPlayed}</span></div>
+        <div class="row"><span class="k">Victoires</span><span class="v">${p.wins}</span></div>
+        <div class="row"><span class="k">Taux de victoire</span><span class="v">${p.gamesPlayed?Math.round(p.wins/p.gamesPlayed*100):0}%</span></div>
+        <div class="row"><span class="k">Meilleure série</span><span class="v">${p.bestStreak||0}</span></div>
+        <div class="row"><span class="k">Coups au total</span><span class="v">${s.totalMoves}</span></div>
+        <div class="row"><span class="k">Score total</span><span class="v">${s.totalScore}</span></div>
+        <div class="row"><span class="k">Victoire la plus rapide</span><span class="v">${s.fastestWinMs?fmtTime(s.fastestWinMs):'—'}</span></div>
+        <div class="row"><span class="k">Moins de coups</span><span class="v">${s.fewestMovesWin??'—'}</span></div>
+        <div class="row"><span class="k">Record Ascension</span><span class="v">L${p.ascension.bestLevel||0}</span></div>
+        <div class="row"><span class="k">Rang</span><span class="v">${p.tier}</span></div>
       </div>
-      <h3>Achievements</h3><div class="wb-grid">${achievementGrid(p)}</div>
-      <div class="btn-row"><button class="btn ghost" data-close>Back</button></div></div>`);
+      <h3>Hauts faits</h3><div class="wb-grid">${achievementGrid(p)}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
   }
 
   showSettings() {
     const p = this.profile;
-    this.openModal(`<div class="panel"><h2>Settings</h2><div class="sub">Accessibility &amp; data</div>
+    this.openModal(`<div class="panel"><h2>Réglages</h2><div class="sub">Accessibilité et données</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin:12px 0">
-        <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span>Sound</span><input type="checkbox" id="set-mute" ${p.settings.muted?'':'checked'}></label>
-        <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span>Reduce motion</span><input type="checkbox" id="set-motion" ${p.settings.reduceMotion?'checked':''}></label>
+        <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span>Son</span><input type="checkbox" id="set-mute" ${p.settings.muted?'':'checked'}></label>
+        <label style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span>Réduire les animations</span><input type="checkbox" id="set-motion" ${p.settings.reduceMotion?'checked':''}></label>
       </div>
       <div class="btn-row">
-        <button class="btn ghost" data-act="export">Export save</button>
-        <button class="btn ghost" data-act="import">Import save</button>
-        <button class="btn ghost" data-act="reset" style="color:var(--bad)">Reset</button>
-        <button class="btn ghost" data-close>Back</button>
+        <button class="btn ghost" data-act="export">Exporter</button>
+        <button class="btn ghost" data-act="import">Importer</button>
+        <button class="btn ghost" data-act="reset" style="color:var(--bad)">Réinitialiser</button>
+        <button class="btn ghost" data-close>Retour</button>
       </div></div>`);
     const root = document.getElementById('modal-root');
     root.querySelector('#set-mute').onchange = (e) => { p.settings.muted = !e.target.checked; audio.setMuted(p.settings.muted); saveProfile(p); };
     root.querySelector('#set-motion').onchange = (e) => { p.settings.reduceMotion = e.target.checked; document.documentElement.classList.toggle('reduce-motion', e.target.checked); saveProfile(p); };
-    root.querySelector('[data-act="export"]').onclick = () => { navigator.clipboard.writeText(exportProfile(p)); this.toast('Save copied to clipboard'); };
-    root.querySelector('[data-act="import"]').onclick = () => { const s = prompt('Paste exported save:'); if (s) { try { this.profile = importProfile(s); saveProfile(this.profile); this.applyAppearance(); this.showMenu(); this.toast('Imported'); } catch(e){ this.toast('Invalid save'); } } };
-    root.querySelector('[data-act="reset"]').onclick = () => { if (confirm('Reset all progress?')) { this.profile = defaultProfile(); saveProfile(this.profile); this.applyAppearance(); this.showMenu(); } };
+    root.querySelector('[data-act="export"]').onclick = () => { navigator.clipboard.writeText(exportProfile(p)); this.toast('Sauvegarde copiée dans le presse-papiers'); };
+    root.querySelector('[data-act="import"]').onclick = () => { const s = prompt('Collez la sauvegarde exportée :'); if (s) { try { this.profile = importProfile(s); saveProfile(this.profile); this.applyAppearance(); this.showMenu(); this.toast('Importée'); } catch(e){ this.toast('Sauvegarde invalide'); } } };
+    root.querySelector('[data-act="reset"]').onclick = () => { if (confirm('Réinitialiser toute la progression ?')) { this.profile = defaultProfile(); saveProfile(this.profile); this.applyAppearance(); this.showMenu(); } };
   }
 
   showWorkbench() {
     const p = this.profile;
-    this.openModal(`<div class="panel workbench"><h2>Workbench</h2><div class="sub">Live progress &amp; evidence</div>
+    this.openModal(`<div class="panel workbench"><h2>Atelier</h2><div class="sub">Avancement et preuves</div>
       <section><h3>Build</h3><div class="wb-grid">
-        <div class="wb-card"><div class="k">Status</div><div class="v">Playable</div></div>
+        <div class="wb-card"><div class="k">État</div><div class="v">Jouable</div></div>
         <div class="wb-card"><div class="k">Traits</div><div class="v">${p.traitsUnlocked.length}/${TRAITS.length}</div></div>
-        <div class="wb-card"><div class="k">Tier / XP</div><div class="v">${p.tier} · ${p.xp}</div></div>
-        <div class="wb-card"><div class="k">Tests</div><div class="v">62 green</div></div>
-        <div class="wb-card"><div class="k">Generated art</div><div class="v">${artCount()}/20 assets</div></div>
+        <div class="wb-card"><div class="k">Rang / XP</div><div class="v">${p.tier} · ${p.xp}</div></div>
+        <div class="wb-card"><div class="k">Tests</div><div class="v">83 au vert</div></div>
+        <div class="wb-card"><div class="k">Art généré</div><div class="v">${artCount()}/20 visuels</div></div>
       </div></section>
-      <section><h3>Reference benchmarks</h3><div class="wb-grid">
-        <div class="wb-card"><div class="k">MS Solitaire</div><div class="v">Interaction clarity</div></div>
-        <div class="wb-card"><div class="k">Balatro</div><div class="v">Loop &amp; discovery</div></div>
-        <div class="wb-card"><div class="k">Zachtronics</div><div class="v">Rule invention</div></div>
+      <section><h3>Références</h3><div class="wb-grid">
+        <div class="wb-card"><div class="k">MS Solitaire</div><div class="v">Clarté des interactions</div></div>
+        <div class="wb-card"><div class="k">Balatro</div><div class="v">Boucle et découverte</div></div>
+        <div class="wb-card"><div class="k">Zachtronics</div><div class="v">Invention de règles</div></div>
       </div></div></section>
-      <section><h3>Unresolved gaps</h3><div class="wb-grid">
-        <div class="wb-card"><div class="k">Mobile</div><div class="v">Needs real-device pass</div></div>
-        <div class="wb-card"><div class="k">Solver</div><div class="v">Hard traits can time out to 'unknown'</div></div>
+      <section><h3>Points ouverts</h3><div class="wb-grid">
+        <div class="wb-card"><div class="k">Mobile</div><div class="v">Passe sur appareil réel à faire</div></div>
+        <div class="wb-card"><div class="k">Solveur</div><div class="v">Les traits durs peuvent expirer en « inconnu »</div></div>
       </div></section>
-      <div class="btn-row"><button class="btn ghost" data-close>Back</button></div></div>`);
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
   }
 
   // ---------- shop ----------
@@ -731,14 +732,14 @@ export class App {
   showShop() {
     this.openModal(`
       <div class="overlay"><div class="panel shop">
-        <h2>Card Room</h2>
-        <div class="sub">Hire dealers. They play while you don't.</div>
+        <h2>Salle de jeu</h2>
+        <div class="sub">Engagez des croupiers. Ils jouent quand vous ne jouez pas.</div>
         <div class="shop-hero">
           <div class="coin-hero"><span id="shop-coins">0</span> <span>🪙</span></div>
           <div class="rate" id="shop-rate">idle</div>
         </div>
         <div id="shop-body"></div>
-        <div class="btn-row"><button class="btn ghost" data-act="back">Back</button></div>
+        <div class="btn-row"><button class="btn ghost" data-act="back">Retour</button></div>
       </div></div>
     `);
     this._shopOpen = true; // set AFTER openModal, so the live refresh finds the DOM
@@ -757,7 +758,7 @@ export class App {
     if (coinsEl) coinsEl.textContent = fmtCoins(idle.coins);
     if (rateEl) {
       const cps = coinsPerSecond(idle);
-      rateEl.textContent = cps > 0 ? `earning ${fmtCoins(cps)} / second` : 'no dealers yet — win a hand to get started';
+      rateEl.textContent = cps > 0 ? `${fmtCoins(cps)} pièces / seconde` : 'aucun croupier — gagnez une partie pour commencer';
     }
 
     const dealers = DEALERS.filter((d) => dealerUnlocked(idle, d)).map((d) => {
@@ -770,7 +771,7 @@ export class App {
         <span class="info">
           <span class="name">${d.name}${owned ? ` <b>×${owned}</b>` : ''}</span>
           <span class="desc">${d.desc}</span>
-          <span class="rate">${fmtCoins(d.rate)}/s each${contrib ? ` · making ${fmtCoins(contrib)}/s` : ''}</span>
+          <span class="rate">${fmtCoins(d.rate)}/s chacun${contrib ? ` · rapporte ${fmtCoins(contrib)}/s` : ''}</span>
         </span>
         <span class="cost">${fmtCoins(cost)} 🪙</span>
       </button>`;
@@ -789,11 +790,11 @@ export class App {
       .map((u) => `<span class="owned-up" title="${u.desc}">${u.emoji} ${u.name}</span>`).join('');
 
     body.innerHTML = `
-      ${dealers ? `<h3>Dealers</h3><div class="shop-list">${dealers}</div>`
-        : `<p class="note">Win a hand to earn your first coins, then hire an Apprentice.</p>`}
-      ${ups ? `<h3>Upgrades</h3><div class="shop-list">${ups}</div>` : ''}
-      ${ownedUps ? `<h3>Owned</h3><div class="owned-ups">${ownedUps}</div>` : ''}
-      <p class="note">No purchases, no ads, no energy. Coins come from playing and from your dealers — that's the whole economy.</p>
+      ${dealers ? `<h3>Croupiers</h3><div class="shop-list">${dealers}</div>`
+        : `<p class="note">Gagnez une partie pour vos premières pièces, puis engagez un Apprenti.</p>`}
+      ${ups ? `<h3>Améliorations</h3><div class="shop-list">${ups}</div>` : ''}
+      ${ownedUps ? `<h3>Acquises</h3><div class="owned-ups">${ownedUps}</div>` : ''}
+      <p class="note">Aucun achat, aucune publicité, aucune énergie. Les pièces viennent de vos parties et de vos croupiers — c'est toute l'économie du jeu.</p>
     `;
 
     body.querySelectorAll('[data-buy]').forEach((b) => {
@@ -815,7 +816,7 @@ export class App {
           saveProfile(this.profile);
           this.updateCoins();
           this.renderShopBody();
-          this.toast('Upgrade purchased');
+          this.toast('Amélioration achetée');
         } else audio.invalid();
       };
     });
@@ -832,7 +833,7 @@ export class App {
 
 // ---------- helpers ----------
 
-function modeLabel(m) { return { classic: 'Classic', journey: 'Journey', daily: 'Daily Deal', contract: 'Contract', ascension: 'Ascension', zen: 'Zen' }[m] || m; }
+function modeLabel(m) { return { classic: 'Classique', journey: 'Parcours', daily: 'Donne du jour', contract: 'Contrat', ascension: 'Ascension', zen: 'Zen' }[m] || m; }
 function fmtTime(ms) { if (!ms && ms !== 0) return '—'; const s = Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
 function fmtDiff(traits) { const d = difficultyValue(traits); return (d>0?'+':'')+d; }
 function sourceMatches(m, loc, game) {
@@ -857,17 +858,38 @@ function collItem(id, unlocked, label, kind) {
     <div class="lbl">${label}</div>
   </div>`;
 }
+/** French display names for collectibles. Ids stay English (they're persisted). */
+const COLLECTIBLE_NAMES = {
+  back: { 'sunburst-pop': 'Soleil pop', 'bubblegum-nebula': 'Nébuleuse bonbon', 'mint-crest': 'Blason menthe' },
+  court: { regalia: 'Cour royale', herald: 'Cour du Héraut', oracle: "Cour de l'Oracle" },
+  theme: { sunlit: 'Plein soleil', night: 'Arcade nocturne' },
+};
+function collectibleName(id, kind) {
+  return (COLLECTIBLE_NAMES[kind] && COLLECTIBLE_NAMES[kind][id]) || id;
+}
+
 function miniPreview(id, kind) {
-  if (kind === 'back') return `<div style="width:100%;height:100%;border-radius:8px;background:radial-gradient(circle,#1b2230,#0a0d14);display:grid;place-items:center;color:var(--gold)">${id==='nebula-loom'?'◈':id==='crest-cipher'?'❧':'✦'}</div>`;
-  if (kind === 'court') return `<div style="font-family:var(--font-card);color:var(--gold-2);font-size:22px">${id==='herald'?'H':id==='oracle'?'O':'R'}</div>`;
-  if (kind === 'theme') return `<div style="width:100%;height:100%;border-radius:8px;background:${id==='light'?'#d9cdb8':'#0e1116'}"></div>`;
+  if (kind === 'back') {
+    const grad = {
+      'sunburst-pop': 'linear-gradient(150deg,#ff8fab,#ffb43c)',
+      'bubblegum-nebula': 'linear-gradient(150deg,#7c6cff,#45c8ff)',
+      'mint-crest': 'linear-gradient(150deg,#17c964,#45c8ff)',
+    }[id] || 'linear-gradient(150deg,#ff8fab,#ffb43c)';
+    const glyph = { 'bubblegum-nebula': '✦', 'mint-crest': '❤' }[id] || '★';
+    return `<div style="width:100%;height:100%;border-radius:8px;background:${grad};display:grid;place-items:center;color:#fff;font-size:20px">${glyph}</div>`;
+  }
+  if (kind === 'court') return `<div style="font-size:24px">${id === 'herald' ? '🎺' : id === 'oracle' ? '🔮' : '👑'}</div>`;
+  if (kind === 'theme') return `<div style="width:100%;height:100%;border-radius:8px;background:${id === 'night' ? 'linear-gradient(150deg,#3b2d7a,#1b1f4b)' : 'linear-gradient(150deg,#ffd8a8,#1fc0ad)'}"></div>`;
   return '';
 }
 function achievementGrid(p) {
-  const ACH = [
-    ['ach:first-win','First Light'], ['ach:streak-3','Warming Up'], ['ach:streak-10','Untouchable'],
-    ['ach:no-undo-win','Steady Hand'], ['ach:speed','Swift'], ['ach:efficient','Efficient'],
-    ['ach:trait-collector','Curator'], ['secret:zen-master','Stillness'], ['secret:ascension-5','Climber'], ['secret:all-traits','Polymath'],
-  ];
-  return ACH.map(([id,n]) => `<div class="wb-card" style="${p.achievements.includes(id)?'':'opacity:0.4'}"><div class="k">${n}</div><div class="v" style="font-size:12px;color:${p.achievements.includes(id)?'var(--good)':'var(--ink-faint)'}">${p.achievements.includes(id)?'EARNED':'LOCKED'}</div></div>`).join('');
+  // Derived from UNLOCKS so the names can never drift out of sync with mastery.js
+  const ACH = UNLOCKS.filter((u) => u.kind === 'achievement' || u.kind === 'secret');
+  return ACH.map((u) => {
+    const got = p.achievements.includes(u.id);
+    return `<div class="wb-card" style="${got ? '' : 'opacity:0.4'}" title="${u.desc}">
+      <div class="k">${u.name}</div>
+      <div class="v" style="font-size:12px;color:${got ? 'var(--good)' : 'var(--ink-faint)'}">${got ? 'OBTENU' : 'À FAIRE'}</div>
+    </div>`;
+  }).join('');
 }

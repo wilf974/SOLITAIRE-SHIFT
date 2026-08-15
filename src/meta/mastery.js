@@ -45,23 +45,23 @@ export const UNLOCKS = [
     tier: t.tier, test: (p) => tierFromXp(p.xp) >= t.tier,
   })),
   // achievement-style unlocks
-  { id: 'back:bubblegum-nebula', kind: 'back', target: 'bubblegum-nebula', name: 'Bubblegum Nebula', desc: 'Win a deal with No Recycle.', test: (_p, r) => r.won && (r.traits || []).includes('no-recycle') },
-  { id: 'back:mint-crest', kind: 'back', target: 'mint-crest', name: 'Mint Crest', desc: 'Reach a 5-game win streak.', test: (p) => p.bestStreak >= 5 },
-  { id: 'theme:night', kind: 'theme', target: 'night', name: 'Midnight Arcade', desc: 'Complete a Daily Deal.', test: (_p, r) => r.won && r.mode === 'daily' },
-  { id: 'court:herald', kind: 'court', target: 'herald', name: 'Herald Court', desc: 'Win 10 games.', test: (p) => p.wins >= 10 },
-  { id: 'court:oracle', kind: 'court', target: 'oracle', name: 'Oracle Court', desc: 'Win with three hard traits at once.', test: (_p, r) => r.won && difficultyValue(r.traits) >= 6 },
+  { id: 'back:bubblegum-nebula', kind: 'back', target: 'bubblegum-nebula', name: 'Nébuleuse bonbon', desc: 'Gagnez une donne avec Sans recyclage.', test: (_p, r) => r.won && (r.traits || []).includes('no-recycle') },
+  { id: 'back:mint-crest', kind: 'back', target: 'mint-crest', name: 'Blason menthe', desc: "Enchaînez 5 victoires d'affilée.", test: (p) => p.bestStreak >= 5 },
+  { id: 'theme:night', kind: 'theme', target: 'night', name: 'Arcade nocturne', desc: 'Terminez une Donne du jour.', test: (_p, r) => r.won && r.mode === 'daily' },
+  { id: 'court:herald', kind: 'court', target: 'herald', name: 'Cour du Héraut', desc: 'Remportez 10 parties.', test: (p) => p.wins >= 10 },
+  { id: 'court:oracle', kind: 'court', target: 'oracle', name: "Cour de l'Oracle", desc: 'Gagnez avec trois traits difficiles à la fois.', test: (_p, r) => r.won && difficultyValue(r.traits) >= 6 },
   // achievements
-  { id: 'ach:first-win', kind: 'achievement', name: 'First Light', desc: 'Win your first deal.', test: (p) => p.wins >= 1 },
-  { id: 'ach:streak-3', kind: 'achievement', name: 'Warming Up', desc: 'Win 3 in a row.', test: (p) => p.bestStreak >= 3 },
-  { id: 'ach:streak-10', kind: 'achievement', name: 'Untouchable', desc: 'Win 10 in a row.', test: (p) => p.bestStreak >= 10 },
-  { id: 'ach:no-undo-win', kind: 'achievement', name: 'Steady Hand', desc: 'Win without undo.', test: (_p, r) => r.won && r.undosUsed === 0 },
-  { id: 'ach:speed', kind: 'achievement', name: 'Swift', desc: 'Win in under 3 minutes.', test: (_p, r) => r.won && r.timeMs && r.timeMs < 180000 },
-  { id: 'ach:efficient', kind: 'achievement', name: 'Efficient', desc: 'Win in under 120 moves.', test: (_p, r) => r.won && r.moves && r.moves < 120 },
-  { id: 'ach:trait-collector', kind: 'achievement', name: 'Curator', desc: 'Unlock 8 traits.', test: (p) => p.traitsUnlocked.length >= 8 },
+  { id: 'ach:first-win', kind: 'achievement', name: 'Première lueur', desc: 'Remportez votre première donne.', test: (p) => p.wins >= 1 },
+  { id: 'ach:streak-3', kind: 'achievement', name: 'Ça chauffe', desc: 'Gagnez 3 fois de suite.', test: (p) => p.bestStreak >= 3 },
+  { id: 'ach:streak-10', kind: 'achievement', name: 'Intouchable', desc: 'Gagnez 10 fois de suite.', test: (p) => p.bestStreak >= 10 },
+  { id: 'ach:no-undo-win', kind: 'achievement', name: 'Main sûre', desc: 'Gagnez sans jamais annuler.', test: (_p, r) => r.won && r.undosUsed === 0 },
+  { id: 'ach:speed', kind: 'achievement', name: 'Éclair', desc: 'Gagnez en moins de 3 minutes.', test: (_p, r) => r.won && r.timeMs && r.timeMs < 180000 },
+  { id: 'ach:efficient', kind: 'achievement', name: 'Efficace', desc: 'Gagnez en moins de 120 coups.', test: (_p, r) => r.won && r.moves && r.moves < 120 },
+  { id: 'ach:trait-collector', kind: 'achievement', name: 'Collectionneur', desc: 'Déverrouillez 8 traits.', test: (p) => p.traitsUnlocked.length >= 8 },
   // secrets
-  { id: 'secret:zen-master', kind: 'secret', name: 'Stillness', desc: 'Play 10 Zen games.', test: (p) => (p.stats.modesPlayed.zen || 0) >= 10 },
-  { id: 'secret:ascension-5', kind: 'secret', name: 'Climber', desc: 'Reach Ascension level 5.', test: (p) => p.ascension.bestLevel >= 5 },
-  { id: 'secret:all-traits', kind: 'secret', name: 'Polymath', desc: 'Unlock every trait.', test: (p) => p.traitsUnlocked.length >= TRAITS.length },
+  { id: 'secret:zen-master', kind: 'secret', name: 'Quiétude', desc: 'Jouez 10 parties Zen.', test: (p) => (p.stats.modesPlayed.zen || 0) >= 10 },
+  { id: 'secret:ascension-5', kind: 'secret', name: 'Grimpeur', desc: 'Atteignez le niveau 5 en Ascension.', test: (p) => p.ascension.bestLevel >= 5 },
+  { id: 'secret:all-traits', kind: 'secret', name: 'Érudit', desc: 'Déverrouillez tous les traits.', test: (p) => p.traitsUnlocked.length >= TRAITS.length },
 ];
 
 /** Evaluate all unlocks against profile + last result. Returns newly-earned unlock ids. */

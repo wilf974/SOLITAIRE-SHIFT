@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1fc0ad" />
-    <meta name="description" content="SOLITAIRE: SHIFT — a bright, playful idle Klondike. Play hands, hire dealers, earn coins even while you're away." />
+    <meta name="description" content="SOLITAIRE: SHIFT — un Klondike idle lumineux et joyeux. Jouez des parties, engagez des croupiers, gagnez des pièces même absent." />
     <title>SOLITAIRE: SHIFT</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle'%3E%F0%9F%83%8F%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="styles/base.css" />
@@ -17,20 +17,20 @@
       <header class="topbar">
         <div class="brand" id="brand">SOLITAIRE<small>SHIFT</small></div>
         <div class="hud">
-          <button class="coin-pill" id="btn-shop" title="Card Room" aria-label="Card Room">
+          <button class="coin-pill" id="btn-shop" title="Salle de jeu" aria-label="Salle de jeu">
             <span class="ico">🪙</span>
-            <span class="col"><span class="v" id="hud-coins">0</span><span class="k" id="hud-rate">idle</span></span>
+            <span class="col"><span class="v" id="hud-coins">0</span><span class="k" id="hud-rate">au repos</span></span>
           </button>
           <div class="stat"><span class="v" id="hud-score">0</span><span class="k">Score</span></div>
-          <div class="stat"><span class="v" id="hud-moves">0</span><span class="k">Moves</span></div>
-          <div class="stat"><span class="v" id="hud-time">0:00</span><span class="k">Time</span></div>
-          <button class="iconbtn" id="btn-undo" title="Undo (Z)" aria-label="Undo">
+          <div class="stat"><span class="v" id="hud-moves">0</span><span class="k">Coups</span></div>
+          <div class="stat"><span class="v" id="hud-time">0:00</span><span class="k">Temps</span></div>
+          <button class="iconbtn" id="btn-undo" title="Annuler (Z)" aria-label="Annuler">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5h-6"/></svg>
           </button>
-          <button class="iconbtn" id="btn-hint" title="Hint (H)" aria-label="Hint">
+          <button class="iconbtn" id="btn-hint" title="Indice (H)" aria-label="Indice">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
           </button>
-          <button class="iconbtn" id="btn-auto" title="Auto-complete (A)" aria-label="Auto-complete">
+          <button class="iconbtn" id="btn-auto" title="Terminer automatiquement (A)" aria-label="Terminer automatiquement">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
           <button class="iconbtn" id="btn-menu" title="Menu" aria-label="Menu">
@@ -43,7 +43,7 @@
         <div class="board" id="board"></div>
       </main>
 
-      <div class="help-hint" id="help-hint">Drag cards · tap to send to foundation · double-tap a card to auto-move</div>
+      <div class="help-hint" id="help-hint">Glissez les cartes · touchez pour envoyer aux fondations · double-touche pour déplacer automatiquement</div>
     </div>
 
     <!-- modal root -->

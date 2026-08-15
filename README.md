@@ -1,6 +1,6 @@
 # SOLITAIRE: SHIFT
 
-A bright, playful **idle Klondike solitaire** for the browser.
+A bright, playful **idle Klondike solitaire** for the browser. **The game's UI is in French.**
 
 Play a hand yourself, hire dealers who keep playing while you're away, and spend
 the coins on upgrades. Real Klondike underneath — a genuine solver validates
@@ -50,7 +50,7 @@ Keyboard: `Z` undo · `H` hint · `A` auto-complete · `Space` draw · `N` new �
 | | |
 |---|---|
 | **Play** | Finish a hand → earn coins |
-| **Hire** | Coins buy dealers (Apprentice → Croupier → Hustler → Magician → Automaton → Oracle) |
+| **Hire** | Coins buy dealers (Apprenti → Croupier → Arnaqueur → Magicien → Automate → L'Oracle) |
 | **Idle** | Dealers earn coins every second, online and off |
 | **Upgrade** | Permanent multipliers on idle income and on your own wins |
 
@@ -65,13 +65,13 @@ loot boxes, no energy meter, no timed FOMO. Coins come from playing and from
 dealers you bought with coins. That is the entire economy.
 
 ### Modes
-| Mode | What it is |
+| Mode (in game) | What it is |
 |---|---|
-| **Classic** | Pure Klondike, random deal — the traditional gamble |
-| **Journey** | The main path; traits appear as you climb tiers |
-| **Daily Deal** | One solver-validated deal a day, identical for everyone |
-| **Contracts** | Six curated challenges with strange rules (tier 2+) |
-| **Ascension** | Escalating win-streak run, one harder trait per level (tier 3+) |
+| **Classique** | Pure Klondike, random deal — the traditional gamble |
+| **Parcours** | The main path; traits appear as you climb ranks |
+| **Donne du jour** | One solver-validated deal a day, identical for everyone |
+| **Contrats** | Six curated challenges with strange rules (rank 2+) |
+| **Ascension** | Escalating win-streak run, one harder trait per level (rank 3+) |
 | **Zen** | Relaxed, always solver-validated |
 
 ### Traits
@@ -79,10 +79,11 @@ Fourteen unlockable **rule** modifiers — not powers. Each is one sentence, eac
 carries a difficulty value, and harder combinations pay more XP. Veterans get
 *more options*, never *stronger abilities*.
 
-`Draw Three (+1)` · `Single Pass (+2)` · `No Recycle (+3)` · `Free Empties (−2)` ·
-`Locked Empties (+4)` · `Same Suit (+2)` · `Any Colour (−2)` · `No Sequences (+2)` ·
-`Foundations Down (+1)` · `Wrap Around (+1)` · `Reverse Tableau (+2)` ·
-`No Undo (+1)` · `Limited Undo (+1)` · `Kings Only (0)`
+`Pioche par trois (+1)` · `Passe unique (+2)` · `Sans recyclage (+3)` ·
+`Colonnes libres (−2)` · `Colonnes scellées (+4)` · `Même couleur (+2)` ·
+`Couleur libre (−2)` · `Cartes seules (+2)` · `Fondations inversées (+1)` ·
+`Boucle (+1)` · `Tableau ascendant (+2)` · `Sans retour (+1)` ·
+`Retours comptés (+1)` · `Rois seulement (0)`
 
 ### Progression
 XP and tiers, plus unlocks gated on **deeds** rather than raw XP: win with No

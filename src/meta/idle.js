@@ -15,22 +15,22 @@ export const OFFLINE_CAP_HOURS = 8; // generous, and stated plainly in the UI
 
 /** Dealers: each produces coins per second. Cost scales geometrically. */
 export const DEALERS = [
-  { id: 'apprentice', name: 'Apprentice',   emoji: '🃏', desc: 'Shuffles slowly, means well.',            baseCost: 25,      rate: 0.1 },
-  { id: 'croupier',   name: 'Croupier',     emoji: '🎩', desc: 'Crisp hands, crisper waistcoat.',         baseCost: 300,     rate: 1 },
-  { id: 'hustler',    name: 'Card Hustler', emoji: '🕶️', desc: 'Never lost a deal. Allegedly.',           baseCost: 3200,    rate: 8 },
-  { id: 'magician',   name: 'Magician',     emoji: '🪄', desc: 'The aces were up there the whole time.',  baseCost: 38000,   rate: 55 },
-  { id: 'automaton',  name: 'Automaton',    emoji: '⚙️', desc: 'Clockwork fingers, infinite patience.',   baseCost: 450000,  rate: 380 },
-  { id: 'oracle',     name: 'The Oracle',   emoji: '🔮', desc: 'Plays the deal before it is dealt.',      baseCost: 5600000, rate: 2600 },
+  { id: 'apprentice', name: 'Apprenti',      emoji: '🃏', desc: 'Mélange lentement, mais de bon cœur.',    baseCost: 25,      rate: 0.1 },
+  { id: 'croupier',   name: 'Croupier',      emoji: '🎩', desc: 'Mains impeccables, gilet encore plus.',  baseCost: 300,     rate: 1 },
+  { id: 'hustler',    name: 'Arnaqueur',     emoji: '🕶️', desc: "N'a jamais perdu. Officiellement.",      baseCost: 3200,    rate: 8 },
+  { id: 'magician',   name: 'Magicien',      emoji: '🪄', desc: 'Les as étaient là depuis le début.',      baseCost: 38000,   rate: 55 },
+  { id: 'automaton',  name: 'Automate',      emoji: '⚙️', desc: "Doigts d'horlogerie, patience infinie.", baseCost: 450000,  rate: 380 },
+  { id: 'oracle',     name: "L'Oracle",      emoji: '🔮', desc: "Joue la donne avant qu'elle soit faite.", baseCost: 5600000, rate: 2600 },
 ];
 
 /** Upgrades: permanent multipliers. Bought once each. */
 export const UPGRADES = [
-  { id: 'felt',     name: 'Velvet Felt',     emoji: '🟢', desc: 'All dealers earn ×2.',            cost: 1000,     mult: 2,  kind: 'idle' },
-  { id: 'lamps',    name: 'Warm Lamps',      emoji: '💡', desc: 'All dealers earn ×2.',            cost: 25000,    mult: 2,  kind: 'idle' },
-  { id: 'lounge',   name: 'The Lounge',      emoji: '🛋️', desc: 'All dealers earn ×3.',            cost: 600000,   mult: 3,  kind: 'idle' },
-  { id: 'skylight', name: 'Skylight',        emoji: '🌤️', desc: 'All dealers earn ×3.',            cost: 12000000, mult: 3,  kind: 'idle' },
-  { id: 'tips',     name: 'Generous Tips',   emoji: '🪙', desc: 'Your own wins pay ×2.',           cost: 4000,     mult: 2,  kind: 'hand' },
-  { id: 'highroll', name: 'High Roller',     emoji: '💎', desc: 'Your own wins pay ×3.',           cost: 900000,   mult: 3,  kind: 'hand' },
+  { id: 'felt',     name: 'Tapis de velours', emoji: '🟢', desc: 'Tous les croupiers gagnent ×2.',  cost: 1000,     mult: 2,  kind: 'idle' },
+  { id: 'lamps',    name: 'Lampes chaudes',   emoji: '💡', desc: 'Tous les croupiers gagnent ×2.',  cost: 25000,    mult: 2,  kind: 'idle' },
+  { id: 'lounge',   name: 'Le Salon',         emoji: '🛋️', desc: 'Tous les croupiers gagnent ×3.',  cost: 600000,   mult: 3,  kind: 'idle' },
+  { id: 'skylight', name: 'Verrière',         emoji: '🌤️', desc: 'Tous les croupiers gagnent ×3.',  cost: 12000000, mult: 3,  kind: 'idle' },
+  { id: 'tips',     name: 'Pourboires',       emoji: '🪙', desc: 'Vos propres victoires paient ×2.',cost: 4000,     mult: 2,  kind: 'hand' },
+  { id: 'highroll', name: 'Gros joueur',      emoji: '💎', desc: 'Vos propres victoires paient ×3.',cost: 900000,   mult: 3,  kind: 'hand' },
 ];
 
 /** Default idle state, merged into the profile. */

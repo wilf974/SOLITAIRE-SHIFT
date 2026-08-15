@@ -36,20 +36,20 @@ export async function makeDeal(mode, opts = {}) {
     case 'classic': {
       // traditional random deal (the spec permits this for Classic). Player accepts the risk.
       const seed = 'classic-' + Math.random().toString(36).slice(2, 10);
-      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Win the deal.', meta: {} };
+      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Remportez la donne.', meta: {} };
     }
     case 'zen': {
       const found = firstSolvable('zen-' + Date.now(), [], 20, 80000);
       const seed = found ? found.seed : 'zen-fallback::0';
-      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Relax. No pressure.', meta: {} };
+      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Détendez-vous. Aucune pression.', meta: {} };
     }
     case 'daily': {
       const date = opts.date || todayStr();
       const cached = profile.lastDaily && profile.lastDaily.date === date ? profile.lastDaily : null;
-      if (cached && cached.seed) return { mode, seed: cached.seed, rules: cached.rules, traits: [], objective: `Daily Deal — ${date}`, meta: { date } };
+      if (cached && cached.seed) return { mode, seed: cached.seed, rules: cached.rules, traits: [], objective: `Donne du jour — ${date}`, meta: { date } };
       const found = firstSolvable('daily-' + date, [], 30, 120000);
-      if (!found) return { mode, seed: 'daily-' + date + '::0', rules: composeRules([]), traits: [], objective: `Daily Deal — ${date}`, meta: { date, fallback: true } };
-      return { mode, seed: found.seed, rules: found.rules, traits: [], objective: `Daily Deal — ${date}`, meta: { date, validated: true } };
+      if (!found) return { mode, seed: 'daily-' + date + '::0', rules: composeRules([]), traits: [], objective: `Donne du jour — ${date}`, meta: { date, fallback: true } };
+      return { mode, seed: found.seed, rules: found.rules, traits: [], objective: `Donne du jour — ${date}`, meta: { date, validated: true } };
     }
     case 'journey': {
       const stage = Math.max(1, opts.stage || (profile.tier || 0) + 1);
@@ -57,7 +57,7 @@ export async function makeDeal(mode, opts = {}) {
       const traits = pickJourneyTraits(stage, profile);
       const found = firstSolvable('journey-s' + stage, traits, difficultyTries(traits), 100000);
       const seed = found ? found.seed : 'journey-s' + stage + '::0';
-      return { mode, seed, rules: found ? found.rules : composeRules(traits), traits, objective: `Journey · Stage ${stage}`, meta: { stage } };
+      return { mode, seed, rules: found ? found.rules : composeRules(traits), traits, objective: `Parcours · Étape ${stage}`, meta: { stage } };
     }
     case 'contract': {
       const c = CONTRACTS.find((x) => x.id === opts.contractId) || CONTRACTS[0];
@@ -70,7 +70,7 @@ export async function makeDeal(mode, opts = {}) {
       const traits = ascensionTraits(level, profile);
       const found = firstSolvable('ascension-l' + level, traits, difficultyTries(traits), 120000);
       const seed = found ? found.seed : 'ascension-l' + level + '::0';
-      return { mode, seed, rules: found ? found.rules : composeRules(traits), traits, objective: `Ascension · Level ${level}`, meta: { level } };
+      return { mode, seed, rules: found ? found.rules : composeRules(traits), traits, objective: `Ascension · Niveau ${level}`, meta: { level } };
     }
     default:
       return { mode: 'classic', seed: 'classic-0', rules: composeRules([]), traits: [], objective: '', meta: {} };

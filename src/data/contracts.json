@@ -1,55 +1,55 @@
 [
   {
     "id": "c1-silver-thread",
-    "name": "Silver Thread",
-    "desc": "Same-suit builds. Patience over speed — runs must share a suit.",
+    "name": "Fil d'argent",
+    "desc": "Suites de même enseigne. La patience prime sur la vitesse.",
     "traits": ["same-suit"],
-    "objective": "Win the deal.",
+    "objective": "Remporter la donne.",
     "baseSeed": "contract-silver-thread",
     "tier": 2
   },
   {
     "id": "c2-one-shot",
-    "name": "One Shot",
-    "desc": "The stock never recycles. Make every draw count.",
+    "name": "Coup unique",
+    "desc": "La pioche ne se recycle jamais. Chaque tirage compte.",
     "traits": ["no-recycle", "draw-three"],
-    "objective": "Win with no stock recycle.",
+    "objective": "Gagner sans recycler la pioche.",
     "baseSeed": "contract-one-shot",
     "tier": 3
   },
   {
     "id": "c3-locked-down",
-    "name": "Locked Down",
-    "desc": "Empty columns can never be refilled. Plan your kings.",
+    "name": "Verrouillé",
+    "desc": "Les colonnes vides restent vides. Placez vos rois avec soin.",
     "traits": ["locked-empties"],
-    "objective": "Win despite locked empties.",
+    "objective": "Gagner malgré les colonnes scellées.",
     "baseSeed": "contract-locked-down",
     "tier": 3
   },
   {
     "id": "c4-descending-world",
-    "name": "Descending World",
-    "desc": "Foundations build King down to Ace. The table is inverted.",
+    "name": "Monde inversé",
+    "desc": "Les fondations vont du Roi à l'As. Tout est à l'envers.",
     "traits": ["foundations-down", "reverse-tableau"],
-    "objective": "Win in the inverted world.",
+    "objective": "Gagner dans le monde inversé.",
     "baseSeed": "contract-descending-world",
     "tier": 4
   },
   {
     "id": "c5-solo-moves",
-    "name": "Solo Moves",
-    "desc": "No runs may be moved together. Every card travels alone.",
+    "name": "En solitaire",
+    "desc": "Aucune suite ne se déplace groupée. Chaque carte voyage seule.",
     "traits": ["no-sequences", "no-undo"],
-    "objective": "Win moving only single cards, no undo.",
+    "objective": "Gagner carte par carte, sans annuler.",
     "baseSeed": "contract-solo-moves",
     "tier": 3
   },
   {
     "id": "c6-the-gauntlet",
-    "name": "The Gauntlet",
-    "desc": "Everything hard at once. For veterans only.",
+    "name": "Le Gantelet",
+    "desc": "Tout ce qui est difficile, en même temps. Pour vétérans.",
     "traits": ["no-recycle", "locked-empties", "same-suit", "no-undo"],
-    "objective": "Survive the gauntlet.",
+    "objective": "Survivre au gantelet.",
     "baseSeed": "contract-the-gauntlet",
     "tier": 5
   }
