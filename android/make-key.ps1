@@ -38,31 +38,60 @@ Write-Host ""
 $pw1 = Read-Host 'Password' -AsSecureString
 $pw2 = Read-Host 'Confirm ' -AsSecureString
 
-$p1 = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw1))
-$p2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw2))
+function Read-Plain([Security.SecureString] $secure) {
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    try   { return [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+}
 
-if ($p1 -ne $p2)      { throw 'The two passwords do not match.' }
-if ($p1.Length -lt 6) { throw 'Java requires at least 6 characters.' }
+$p1 = Read-Plain $pw1
+$p2 = Read-Plain $pw2
 
-# -dname is filled in non-interactively: none of it is shown to players, and
+if ($p1 -ne $p2) { throw 'The two passwords do not match.' }
+# Java's own floor is 6, but this key guards the app's identity for its whole
+# lifetime and cannot be rotated, so hold it to a real length.
+if ($p1.Length -lt 12) {
+    throw 'Use at least 12 characters: this key can never be replaced once the app is published.'
+}
+
+# The password goes to keytool on STDIN, never as an argument: command lines
+# are readable by any other process on the machine (and land in shell history).
+# -dname is filled in non-interactively; none of it is shown to players, and
 # Google identifies the app by the key itself, not by these fields.
-& $keytool -genkeypair -v `
-    -keystore $keystore `
-    -alias $alias `
-    -keyalg RSA -keysize 2048 -validity 10000 `
-    -storepass $p1 -keypass $p1 `
-    -dname "CN=Solitaire Shift, OU=Games, O=Solitaire Shift, L=Paris, C=FR"
+$keytoolArgs = @(
+    '-genkeypair', '-v',
+    '-keystore', $keystore,
+    '-alias', $alias,
+    '-keyalg', 'RSA', '-keysize', '2048', '-validity', '10000',
+    '-dname', 'CN=Solitaire Shift, OU=Games, O=Solitaire Shift, L=Paris, C=FR'
+)
+# keytool prompts for the store password twice, then the key password.
+# An empty third line reuses the store password for the key.
+"$p1`n$p1`n`n" | & $keytool @keytoolArgs
 
 if ($LASTEXITCODE -ne 0) { throw "keytool failed ($LASTEXITCODE)" }
 
+# keystore.properties holds the password in clear text, because that is the
+# only format Gradle reads. It is gitignored, but make it unreadable to other
+# accounts on this machine as well.
 @"
 storeFile=$keystore
 storePassword=$p1
 keyAlias=$alias
 keyPassword=$p1
 "@ | Out-File -FilePath 'keystore.properties' -Encoding ascii
+
+foreach ($f in @('keystore.properties', $keystore)) {
+    $acl = Get-Acl $f
+    $acl.SetAccessRuleProtection($true, $false)   # drop inherited permissions
+    $acl.SetAccessRule((New-Object Security.AccessControl.FileSystemAccessRule(
+        "$env:USERDOMAIN\$env:USERNAME", 'FullControl', 'Allow')))
+    Set-Acl -Path $f -AclObject $acl
+}
+
+# don't leave the password sitting in a PowerShell variable
+$p1 = $null; $p2 = $null
+[GC]::Collect()
 
 Write-Host ""
 Write-Host "  Created $keystore and keystore.properties" -ForegroundColor Green
