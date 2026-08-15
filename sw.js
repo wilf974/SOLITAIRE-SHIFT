@@ -5,7 +5,7 @@
 // dropped on activate. Nothing here talks to a server: there is no telemetry,
 // no account, and no remote save.
 
-const CACHE_VERSION = 'solitaire-shift-v5';
+const CACHE_VERSION = 'solitaire-shift-v6';
 
 // Everything the game needs to boot and play. Art is added on demand below.
 const CORE = [
@@ -32,6 +32,7 @@ const CORE = [
   './src/meta/mastery.js',
   './src/meta/powers.js',
   './src/meta/difficulty.js',
+  './src/meta/rewards.js',
   './src/ui/render.js',
   './src/ui/interaction.js',
   './src/ui/audio.js',

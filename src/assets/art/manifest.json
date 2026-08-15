@@ -613,6 +613,150 @@
       "suit": null,
       "rank": null,
       "bytes": 1342726
+    },
+    "back-stone-seal": {
+      "file": "back-stone-seal.png",
+      "hash": "bce243416c892e70",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2354198
+    },
+    "back-clockwork": {
+      "file": "back-clockwork.png",
+      "hash": "7fd57877a6e1da3f",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2464522
+    },
+    "back-raven-feather": {
+      "file": "back-raven-feather.png",
+      "hash": "e39c372a2bc6616c",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2382926
+    },
+    "back-royal-velvet": {
+      "file": "back-royal-velvet.png",
+      "hash": "07018159002b4e47",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2349972
+    },
+    "back-tide-glass": {
+      "file": "back-tide-glass.png",
+      "hash": "4d1d3e4e6a731e61",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2502264
+    },
+    "back-star-chart": {
+      "file": "back-star-chart.png",
+      "hash": "c1265adbaa45f7d7",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 1980990
+    },
+    "back-ember-forge": {
+      "file": "back-ember-forge.png",
+      "hash": "8d34a923c106dd9b",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2226045
+    },
+    "back-mirror-shard": {
+      "file": "back-mirror-shard.png",
+      "hash": "07aea2f4964f1ab1",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2569450
+    },
+    "back-house-gold": {
+      "file": "back-house-gold.png",
+      "hash": "b30714dab554ab7f",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2460019
+    },
+    "table-workshop": {
+      "file": "table-workshop.png",
+      "hash": "6c52620ea188800c",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2311137
+    },
+    "table-anvil": {
+      "file": "table-anvil.png",
+      "hash": "583c848fbab2aa5e",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2471076
+    },
+    "table-laboratory": {
+      "file": "table-laboratory.png",
+      "hash": "5b0fdc8ec6a657e5",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2323891
+    },
+    "table-theatre": {
+      "file": "table-theatre.png",
+      "hash": "1a3421deac5dcf61",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2802206
+    },
+    "table-harvest": {
+      "file": "table-harvest.png",
+      "hash": "0abfb0a495adcbd5",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2630573
+    },
+    "table-library": {
+      "file": "table-library.png",
+      "hash": "bc0fa70e05cb1233",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2506643
+    },
+    "table-sanctum": {
+      "file": "table-sanctum.png",
+      "hash": "c97c085a8f61e6e7",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2575721
     }
   }
 }

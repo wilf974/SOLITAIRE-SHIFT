@@ -364,12 +364,61 @@ export function battleModeIconPrompt() {
   }];
 }
 
+/**
+ * Boss loot: the card backs and table felts unlocked by beating a boss.
+ * Each echoes the boss it came from, so the reward is recognisable.
+ */
+export function lootPrompts() {
+  const BACKS = [
+    ['back-stone-seal', 'a carved stone seal with a glowing turquoise rune at its centre, moss creeping at the corners, on slate-grey and mint'],
+    ['back-clockwork', 'interlocking brass gears and a clock face with delicate hands, on deep blue with warm brass accents'],
+    ['back-raven-feather', 'a single large iridescent raven feather crossed with a small golden key, on ink black with violet sheen'],
+    ['back-royal-velvet', 'a crowned monogram medallion on rich crimson velvet with gold braid framing'],
+    ['back-tide-glass', 'a swirling wave of translucent sea-glass with tiny bubbles and a pearl at the centre, on aqua and seafoam'],
+    ['back-star-chart', 'a constellation map with linked stars and a crescent moon, on midnight blue with gold starlight'],
+    ['back-ember-forge', 'a glowing forge ember with sparks rising and a hammer silhouette, on charcoal with molten orange'],
+    ['back-mirror-shard', 'a cracked mirror shard reflecting a second, offset pattern, on glacier blue and silver'],
+    ['back-house-gold', 'an ornate art-deco fan of gold rays around a small spade emblem, on deep emerald green'],
+  ];
+
+  const TABLES = [
+    ['table-workshop', 'a worn wooden workbench surface with faint tool marks and pale sawdust'],
+    ['table-anvil', 'a dark iron surface with faint hammer dents and a warm ember glow at the edges'],
+    ['table-laboratory', 'a pale marble bench with faint alchemical circles etched in soft copper'],
+    ['table-theatre', 'deep red stage velvet with faint gold rope patterning'],
+    ['table-harvest', 'a warm wheat-gold woven surface with faint stalk textures'],
+    ['table-library', 'a green leather desktop with faint gold tooling at the border'],
+    ['table-sanctum', 'a pale stone floor with a faint luminous circle and soft indigo shadow'],
+  ];
+
+  const backs = BACKS.map(([id, subject]) => ({
+    id, kind: 'back', size: '1024x1536',
+    prompt: [
+      `Playing-card back design: ${subject}.`,
+      'Symmetrical, centered, with a clean rounded border. Bold and sticker-like.',
+      STYLE, NEG,
+    ].join(' '),
+  }));
+
+  const tables = TABLES.map(([id, subject]) => ({
+    id, kind: 'table', size: '1536x1024',
+    prompt: [
+      `A game table surface seen straight from above, filling the whole frame: ${subject}.`,
+      'Extremely subtle and low-contrast so playing cards placed on top stay perfectly readable.',
+      'Even lighting, no objects, no cards, empty surface only.',
+      STYLE, NEG,
+    ].join(' '),
+  }));
+
+  return [...backs, ...tables];
+}
+
 /** Everything, in generation order (cheap/high-impact first). */
 export function allPrompts() {
   return [
     ...tablePrompts(), ...iconPrompts(), ...bannerPrompts(),
     ...powerIconPrompts(), ...modeIconPrompts(), ...difficultyIconPrompts(),
-    ...battlePrompts(), ...battleModeIconPrompt(),
+    ...battlePrompts(), ...battleModeIconPrompt(), ...lootPrompts(),
     ...backPrompts(), ...acePrompts(), ...courtPrompts(),
   ];
 }
@@ -379,5 +428,6 @@ export const GROUPS = {
   court: courtPrompts, icon: iconPrompts, banner: bannerPrompts,
   power: powerIconPrompts, mode: modeIconPrompts, difficulty: difficultyIconPrompts,
   battle: () => [...battlePrompts(), ...battleModeIconPrompt()],
+  loot: lootPrompts,
   all: allPrompts,
 };

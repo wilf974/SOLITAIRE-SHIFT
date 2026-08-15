@@ -717,3 +717,177 @@ body.boss-strike #app { animation: bossShake .42s; }
 .mode-card.boss .reward { margin-top: 4px; }
 .mode-card.boss:disabled .chip,
 .mode-card.boss:disabled .reward { opacity: .7; }
+
+/* ---------- battle impact ---------- */
+
+/* the card that scored the hit flares before settling */
+.card.battle-strike-card .card-inner {
+  animation: strikeCard .46s var(--ease);
+}
+@keyframes strikeCard {
+  0%   { transform: scale(1); filter: brightness(1); }
+  25%  { transform: scale(1.14); filter: brightness(1.6) saturate(1.3); }
+  55%  { transform: scale(0.97); filter: brightness(1.1); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* a bolt of light travelling from the card to the boss */
+.strike-bolt {
+  position: fixed;
+  z-index: 120;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff 0%, #ffe27a 45%, rgba(255,201,60,0) 70%);
+  box-shadow: 0 0 14px 5px rgba(255,201,60,.75);
+  animation: boltFly .4s cubic-bezier(.4,0,.2,1) forwards;
+}
+.strike-bolt.big {
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  background: radial-gradient(circle, #fff 0%, #ff8fab 40%, rgba(255,77,109,0) 72%);
+  box-shadow: 0 0 22px 9px rgba(255,143,171,.8);
+}
+@keyframes boltFly {
+  0%   { transform: translate(0,0) scale(.5); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1.25); opacity: 0; }
+}
+
+/* the boss recoils, harder on a big hit */
+.bt-face.hurt     { animation: bossHurt .46s var(--ease); }
+.bt-face.hurt-big { animation: bossHurtBig .46s var(--ease); }
+@keyframes bossHurt {
+  0%,100% { transform: translateX(0); filter: none; }
+  30% { transform: translateX(-4px); filter: brightness(1.7) saturate(.4); }
+  60% { transform: translateX(3px); }
+}
+@keyframes bossHurtBig {
+  0%,100% { transform: translate(0,0) rotate(0); filter: none; }
+  20% { transform: translate(-7px,2px) rotate(-5deg); filter: brightness(2) saturate(.2); }
+  45% { transform: translate(6px,-2px) rotate(4deg); }
+  70% { transform: translate(-3px,1px) rotate(-2deg); }
+}
+
+/* the health bar pulses white as it drops */
+.bt-fill.boss.flash {
+  animation: barFlash .3s ease-out;
+}
+@keyframes barFlash {
+  0%   { filter: brightness(2.4); }
+  100% { filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.battle-strike-card .card-inner,
+  .bt-face.hurt, .bt-face.hurt-big,
+  .bt-fill.boss.flash { animation: none !important; }
+  .strike-bolt { display: none; }
+}
+html.reduce-motion .card.battle-strike-card .card-inner,
+html.reduce-motion .bt-face.hurt,
+html.reduce-motion .bt-face.hurt-big { animation: none !important; }
+html.reduce-motion .strike-bolt { display: none; }
+
+/* ---------- boss loot ---------- */
+.prize {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #fff6d6, #ffe9a8);
+  text-align: left;
+  animation: prizeIn .5s var(--pop);
+}
+@keyframes prizeIn {
+  0% { opacity: 0; transform: scale(.85) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.prize-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #8a6200;
+  margin-bottom: 8px;
+}
+.prize-body { display: flex; align-items: center; gap: 14px; }
+.prize-art {
+  width: 64px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(31,41,72,.25);
+  flex: none;
+}
+.prize-art.none {
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: var(--gold-deep);
+  background: #fff;
+}
+.prize-name { font-size: 17px; font-weight: 800; color: var(--ink); }
+.prize-kind { font-size: 12px; color: #8a6200; font-weight: 700; }
+.prize-equip { margin-top: 12px; width: 100%; }
+
+/* collection grid */
+.collection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.coll-item {
+  position: relative;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(31,41,72,.08), 0 5px 12px rgba(31,41,72,.08);
+  transition: transform .12s var(--pop);
+}
+.coll-item:hover:not(:disabled) { transform: translateY(-3px); }
+.coll-item.locked { opacity: .5; cursor: default; }
+.coll-item.active { box-shadow: 0 0 0 3px var(--gold), 0 5px 12px rgba(31,41,72,.12); }
+.coll-item .mini {
+  height: 60px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.coll-item .mini img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.coll-item .mini-glyph { font-size: 24px; }
+.coll-item .lbl {
+  margin-top: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.coll-item .equipped {
+  /* inside the tile, not hanging off it: the grid clips at the panel edge */
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #6b4300;
+  background: linear-gradient(160deg, #ffd76a, #ffb01f);
+  padding: 2px 6px;
+  border-radius: 999px;
+  box-shadow: 0 2px 5px rgba(31,41,72,.25);
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+}
+
+/* card-face trims, unlocked from bosses */
+html[data-trim="gilded"] .face::before { border-color: rgba(240,138,36,.55); border-width: 2px; }
+html[data-trim="gilded"] .face { box-shadow: inset 0 0 0 1px rgba(255,201,60,.35); }
+html[data-trim="iron"] .face::before { border-color: rgba(31,41,72,.35); border-width: 2px; }
+html[data-trim="iron"] .face { box-shadow: inset 0 0 0 1px rgba(31,41,72,.18); }

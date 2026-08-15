@@ -20,6 +20,10 @@ import { EFFECTS } from './engine/powers-fx.js';
 import { CHAPTERS } from './modes.js';
 import { DIFFICULTIES, getDifficulty, difficultyReward, supportsDifficulty } from './meta/difficulty.js';
 import {
+  rewardForBoss, grant as grantReward, catalogue as rewardCatalogue,
+  progress as rewardProgress,
+} from './meta/rewards.js';
+import {
   BOSSES, getBoss, createBattle, afterMove as battleAfterMove,
   movesUntilAttack, refillStock,
 } from './engine/battle.js';
@@ -217,12 +221,27 @@ export class App {
     else if (id === 'time-gift') this.toast(`+${res.seconds} secondes`);
   }
 
+  /** Equip a cosmetic and apply it immediately. */
+  equipReward(reward) {
+    if (!reward) return;
+    const r = this.profile.rewards;
+    if (reward.kind === 'back')  r.activeBack = reward.id;
+    if (reward.kind === 'table') r.activeTable = reward.id;
+    if (reward.kind === 'trim')  r.activeTrim = reward.id;
+    saveProfile(this.profile);
+    this.applyAppearance();
+    audio.unlock();
+    this.toast(`${reward.name} équipé`);
+  }
+
   applyAppearance() {
+    const rw = this.profile.rewards || {};
     document.documentElement.dataset.theme = this.profile.activeTheme || 'sunlit';
     if (this.profile.settings.reduceMotion) document.documentElement.classList.add('reduce-motion');
-    this.renderer.setBack(this.profile.activeBack || 'sunburst-pop');
-    // generated table surface
-    const table = tableArtUrl();
+    document.documentElement.dataset.trim = rw.activeTrim || 'plain';
+    this.renderer.setBack(rw.activeBack || this.profile.activeBack || 'sunburst-pop');
+    // generated table surface — the equipped felt, falling back to the default
+    const table = tableArtUrl(rw.activeTable);
     const appEl = document.getElementById('app');
     if (table && appEl) {
       appEl.style.setProperty('--table-art', `url("${table}")`);
@@ -1013,7 +1032,10 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
     for (const e of events) {
       if (e.type === 'hit') {
         audio.foundation();
+        // the card that struck flashes, then a bolt flies to the boss
+        this.strikeAnimation(e.cardId, e.damage, e.combo);
         this.floatDamage(`-${e.damage}`, 'boss');
+        this.shakeBoss(e.damage);
         if (e.combo > 1) this.flashCombo(e.combo);
         // only call out a genuinely big chain, or it becomes noise
         if (e.combo === 5) say('battle-combo');
@@ -1031,6 +1053,53 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
       } else if (e.type === 'flooded') {
         this.toast('La Souveraine inonde le tableau');
       }
+    }
+  }
+
+  /**
+   * Show the hit landing: the card that scored flashes, and a bolt travels
+   * from it to the boss portrait. Purely decorative — it reads the geometry
+   * that already exists and never touches game state.
+   */
+  strikeAnimation(cardId, damage, combo) {
+    if (this.profile.settings.reduceMotion) return;
+    const card = cardId && this.renderer.getById(cardId);
+    if (card) {
+      card.classList.add('battle-strike-card');
+      setTimeout(() => card.classList.remove('battle-strike-card'), 460);
+    }
+
+    const target = document.querySelector('.bt-boss .bt-face');
+    if (!card || !target) return;
+
+    const from = card.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+    const bolt = document.createElement('div');
+    bolt.className = 'strike-bolt' + (combo >= 4 ? ' big' : '');
+    bolt.style.left = `${from.left + from.width / 2}px`;
+    bolt.style.top = `${from.top + from.height / 2}px`;
+    bolt.style.setProperty('--dx', `${to.left + to.width / 2 - (from.left + from.width / 2)}px`);
+    bolt.style.setProperty('--dy', `${to.top + to.height / 2 - (from.top + from.height / 2)}px`);
+    document.body.appendChild(bolt);
+    setTimeout(() => bolt.remove(), 420);
+  }
+
+  /** The boss portrait recoils, harder for a bigger hit. */
+  shakeBoss(damage) {
+    if (this.profile.settings.reduceMotion) return;
+    const face = document.querySelector('.bt-boss .bt-face');
+    if (!face) return;
+    const cls = damage >= 25 ? 'hurt-big' : 'hurt';
+    face.classList.remove('hurt', 'hurt-big');
+    // reflow so the animation restarts even on consecutive hits
+    void face.offsetWidth;
+    face.classList.add(cls);
+    setTimeout(() => face.classList.remove(cls), 460);
+
+    const track = document.querySelector('.bt-fill.boss');
+    if (track) {
+      track.classList.add('flash');
+      setTimeout(() => track.classList.remove('flash'), 300);
     }
   }
 
@@ -1066,11 +1135,15 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
     p.battle.bestCombo = Math.max(p.battle.bestCombo || 0, b.bestCombo);
 
     let coins = 0;
+    let prize = null;
     if (b.won) {
       p.battle.wins = (p.battle.wins || 0) + 1;
       if (!p.battle.defeated.includes(boss.id)) p.battle.defeated.push(boss.id);
       coins = boss.reward;
       awardCoins(p.powers, coins);
+      // the cosmetic this boss guards — the reason to fight the next one
+      const r = rewardForBoss(boss.id);
+      if (r && grantReward(p.rewards, r)) prize = r;
       audio.victory();
       say(`boss-${boss.id}-lose`);   // the boss concedes
       this.victoryAnimation();
@@ -1099,6 +1172,17 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
         <div class="row"><span class="k">Meilleur combo</span><span class="v">×${b.bestCombo}</span></div>
         <div class="row"><span class="k">Coups joués</span><span class="v">${g.moves}</span></div>
       </div>
+      ${prize ? `<div class="prize">
+        <div class="prize-label">Butin</div>
+        <div class="prize-body">
+          ${prize.art ? `<img class="prize-art" src="src/assets/art/${prize.art}.png" alt="">` : '<div class="prize-art none">✦</div>'}
+          <div>
+            <div class="prize-name">${prize.name}</div>
+            <div class="prize-kind">${prize.kind === 'back' ? 'Dos de cartes' : prize.kind === 'table' ? 'Tapis de jeu' : 'Bordure de carte'}</div>
+          </div>
+        </div>
+        <button class="btn primary prize-equip" data-act="equip">Équiper</button>
+      </div>` : ''}
       ${unlocked ? `<p class="note">Nouveau boss débloqué : <strong>${next.name}</strong>.</p>` : ''}
       ${!b.won ? '<p class="note">Astuce : enchaînez les fondations sans interruption — un combo ×3 triple vos dégâts.</p>' : ''}
       <div class="btn-row">
@@ -1113,6 +1197,8 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
       const target = (b.won && next) ? next.id : boss.id;
       this.startMode('battle', { bossId: target });
     };
+    const equip = root.querySelector('[data-act="equip"]');
+    if (equip) equip.onclick = () => { this.equipReward(prize); equip.textContent = 'Équipé ✓'; equip.disabled = true; };
   }
 
   // ---------- new mode pickers ----------
@@ -1238,24 +1324,46 @@ ${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.
   }
 
   showCollection() {
-    const p = this.profile;
-    const backs = p.backs.map((b) => collItem(b.id, b.unlocked, collectibleName(b.id, 'back'), 'back'));
-    const courts = p.courtFamilies.map((c) => collItem(c.id, c.unlocked, collectibleName(c.id, 'court'), 'court'));
-    const themes = p.themes.map((t) => collItem(t.id, t.unlocked, collectibleName(t.id, 'theme'), 'theme'));
-    this.openModal(`<div class="panel"><h2>Collection</h2><div class="sub">Dos de cartes, figures, thèmes</div>
-      <h3>Dos de cartes</h3><div class="collection">${backs.join('')}</div>
-      <h3>Familles de figures</h3><div class="collection">${courts.join('')}</div>
-      <h3>Thèmes</h3><div class="collection">${themes.join('')}</div>
-      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div></div>`);
+    const rw = this.profile.rewards;
+    const prog = rewardProgress(rw);
+
+    const section = (kind, title, activeKey) => {
+      const items = rewardCatalogue(rw, kind).map((r) => {
+        const active = rw[activeKey] === r.id;
+        const src = r.art ? `src/assets/art/${r.art}.png` : null;
+        return `<button class="coll-item${r.unlocked ? '' : ' locked'}${active ? ' active' : ''}"
+          data-equip="${kind}" data-id="${r.id}" ${r.unlocked ? '' : 'disabled'}>
+          <div class="mini">${
+            r.unlocked && src
+              ? `<img src="${src}" alt="" loading="lazy">`
+              : `<span class="mini-glyph">${r.unlocked ? '✦' : '🔒'}</span>`
+          }</div>
+          <div class="lbl">${r.unlocked ? r.name : '???'}</div>
+          ${active ? '<div class="equipped">Équipé</div>' : ''}
+        </button>`;
+      }).join('');
+      return `<h3>${title}</h3><div class="collection">${items}</div>`;
+    };
+
+    this.openModal(`<div class="panel">
+      <h2>Collection</h2>
+      <div class="sub">${prog.owned}/${prog.total} débloqués</div>
+      <p class="note">Chaque boss vaincu en Battle libère une pièce de collection.
+      Tout est purement décoratif : aucune ne change une règle ou une difficulté.</p>
+      ${section('back', 'Dos de cartes', 'activeBack')}
+      ${section('table', 'Tapis de jeu', 'activeTable')}
+      ${section('trim', 'Bordures', 'activeTrim')}
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+
     document.getElementById('modal-root').querySelectorAll('[data-equip]').forEach((el) => {
       el.onclick = () => {
-        const kind = el.dataset.equip, id = el.dataset.id;
-        if (el.classList.contains('locked')) { audio.invalid(); this.toast('Pas encore déverrouillé'); return; }
-        if (kind === 'back') { this.profile.activeBack = id; this.renderer.setBack(id); }
-        if (kind === 'theme') { this.profile.activeTheme = id; document.documentElement.dataset.theme = id; }
-        if (kind === 'court') { this.profile.activeCourt = id; }
-        saveProfile(this.profile);
-        this.toast('Équipé');
+        const kind = el.dataset.equip;
+        const list = rewardCatalogue(rw, kind);
+        const reward = list.find((r) => r.id === el.dataset.id);
+        if (!reward || !reward.unlocked) { audio.invalid(); return; }
+        this.equipReward(reward);
+        this.showCollection(); // redraw so the "Équipé" badge moves
       };
     });
   }

@@ -1,9 +1,10 @@
 // src/meta/storage.js — persistent profile via localStorage. Versioned, with export/import.
 
 import { defaultPowers } from './powers.js';
+import { defaultRewards } from './rewards.js';
 
 const KEY = 'solitaire-shift:profile:v1';
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 export function defaultProfile() {
   return {
@@ -46,6 +47,7 @@ export function defaultProfile() {
     bestTide: 0,
     difficulty: 'standard', // last chosen difficulty level
     battle: { defeated: [], bestCombo: 0, wins: 0, losses: 0 },
+    rewards: defaultRewards(),
   };
 }
 
@@ -102,6 +104,20 @@ function migrate(p) {
   if (!p.battle || typeof p.battle !== 'object') p.battle = { defeated: [], bestCombo: 0, wins: 0, losses: 0 };
   if (!Array.isArray(p.battle.defeated)) p.battle.defeated = [];
   if (!Number.isFinite(p.battle.bestCombo)) p.battle.bestCombo = 0;
+
+  // v3 -> v4: boss rewards. Existing players keep whatever they had equipped.
+  if (!p.rewards || typeof p.rewards !== 'object') p.rewards = defaultRewards();
+  else {
+    const d = defaultRewards();
+    p.rewards = { ...d, ...p.rewards };
+    for (const bucket of ['backs', 'tables', 'trims']) {
+      if (!Array.isArray(p.rewards[bucket])) p.rewards[bucket] = d[bucket];
+      // the starter items can never be missing
+      for (const id of d[bucket]) if (!p.rewards[bucket].includes(id)) p.rewards[bucket].push(id);
+    }
+  }
+  // carry the old activeBack across, if it is still a real back
+  if (p.activeBack && !p.rewards.activeBack) p.rewards.activeBack = p.activeBack;
 
   if (p.version !== SCHEMA_VERSION) p.version = SCHEMA_VERSION;
   return p;

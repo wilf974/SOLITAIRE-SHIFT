@@ -53,9 +53,10 @@ export function backArtUrl(backId) {
   return url(`back-${backId}`);
 }
 
-/** The table surface image. */
-export function tableArtUrl() {
-  return url('table-sunlit-felt') || url('table-obsidian-felt');
+/** The table surface image for the equipped felt, with a safe fallback. */
+export function tableArtUrl(tableId) {
+  const named = tableId && tableId !== 'sunlit' ? url(`table-${tableId}`) : null;
+  return named || url('table-sunlit-felt');
 }
 
 /** How many assets are available (for the workbench). */
