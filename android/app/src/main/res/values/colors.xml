@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- matches the felt colour and theme-color of the web build -->
+    <color name="brand">#1FC0AD</color>
+    <color name="brand_dark">#10A091</color>
+</resources>

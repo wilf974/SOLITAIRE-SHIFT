@@ -26,3 +26,17 @@ dist/
 /*.png
 # Tooling state (not part of the game)
 .claude-flow/
+
+# Android build outputs and machine-specific config
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/src/main/assets/
+# signing keys must never be committed
+android/keystore.properties
+*.keystore
+*.jks
+
+# built APK copied to the root for convenience
+/SolitaireShift.apk

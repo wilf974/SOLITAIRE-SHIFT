@@ -1,0 +1,104 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'fr.solitaireshift.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'fr.solitaireshift.app'
+        minSdk 24          // Android 7.0: covers ~99% of active devices
+        targetSdk 35       // required level for new Play Store submissions
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        release {
+            // Values come from android/keystore.properties, which is gitignored.
+            // Falls back to unsigned so a clone without the key still builds.
+            def props = new Properties()
+            def f = rootProject.file('keystore.properties')
+            if (f.exists()) {
+                props.load(new FileInputStream(f))
+                storeFile = rootProject.file(props['storeFile'])
+                storePassword = props['storePassword']
+                keyAlias = props['keyAlias']
+                keyPassword = props['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false      // the app is one activity; nothing to shrink
+            shrinkResources false
+            if (rootProject.file('keystore.properties').exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            applicationIdSuffix '.debug'
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The game itself lives in app/src/main/assets/, copied there by the
+    // syncAssets task below so there is only ever one copy in the repo.
+    packagingOptions {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
+        }
+    }
+}
+
+dependencies {
+    // The Kotlin stdlib is pulled in transitively at three different versions
+    // by these AndroidX artifacts, which collide at dex time. Pin one.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.12.1'    // WebViewAssetLoader
+    implementation 'androidx.activity:activity:1.9.3' // OnBackPressedDispatcher
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+        // these two were folded into kotlin-stdlib from 1.8 onward; keeping
+        // the old split artifacts around is what produced the duplicates
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+    }
+}
+
+/**
+ * Copy the web game into the APK's assets. Keeping the game in one place and
+ * copying at build time means the Android app can never drift out of sync
+ * with the web version.
+ */
+tasks.register('syncAssets', Copy) {
+    def webRoot = rootProject.file('..')
+    from(webRoot) {
+        include 'index.html'
+        include 'manifest.webmanifest'
+        include 'styles/**'
+        include 'src/**'
+        // the service worker is pointless inside an APK: everything is local
+        exclude 'sw.js'
+        // build-side only, never shipped
+        exclude 'src/assets/art/*-source.png'
+    }
+    into layout.projectDirectory.dir('src/main/assets')
+}
+
+preBuild.dependsOn 'syncAssets'

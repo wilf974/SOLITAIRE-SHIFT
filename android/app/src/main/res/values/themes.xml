@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SolitaireShift" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/brand</item>
+        <item name="android:navigationBarColor">@color/brand</item>
+        <item name="android:windowBackground">@color/brand</item>
+    </style>
+
+    <!--
+      Splash: the window background is the brand colour, so the very first
+      frame is already the game's colour rather than a white flash.
+    -->
+    <style name="Theme.SolitaireShift.Splash" parent="Theme.SolitaireShift">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
+</resources>
