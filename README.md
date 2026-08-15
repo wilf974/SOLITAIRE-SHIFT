@@ -6,6 +6,9 @@ powers and three modes you won't find in a standard deck.
 
 ### ▶ [Play it here](https://wilf974.github.io/SOLITAIRE-SHIFT/)
 
+> **Reprendre le travail ?** Lisez [`ETAT.md`](ETAT.md) : où en est le projet,
+> ce qu'il reste à faire, et les décisions à ne pas défaire.
+
 Best on a wide window — the board wants seven columns side by side. Installable
 from the browser menu, and playable offline once installed. An Android build
 lives in [`android/`](android/).
