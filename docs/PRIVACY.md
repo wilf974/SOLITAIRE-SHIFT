@@ -62,4 +62,4 @@ nouvelle date de mise à jour.
 
 ## Contact
 
-Pour toute question : *[votre adresse e-mail]*
+Pour toute question : **jean.maillot14@gmail.com**
