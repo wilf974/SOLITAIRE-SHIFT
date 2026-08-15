@@ -107,12 +107,13 @@ export class App {
       const dead = !inHand || barred || (p.timedOnly && !(this.game && this.game.timeLimitMs));
       return `<button class="power-btn${dead ? ' dead' : ''}" data-power="${p.id}"
         title="${p.name} — ${p.desc}" ${dead ? 'disabled' : ''}>
-        <span class="emoji">${p.emoji}</span>
+        ${powerIcon(p)}
         <span class="nm">${p.name}</span>
         <span class="chg">${n}</span>
       </button>`;
     }).join('') + `<button class="power-add" data-open-shop title="Boutique de pouvoirs">＋</button>`;
 
+    bindPowerIconFallbacks(bar);
     bar.querySelectorAll('[data-power]').forEach((b) => {
       b.onclick = () => this.usePower(b.dataset.power);
     });
@@ -1048,7 +1049,7 @@ export class App {
       const owned = chargesOf(pw, p.id);
       const can = pw.coins >= p.cost;
       return `<button class="shop-item ${can ? '' : 'poor'}" data-buy="${p.id}" ${can ? '' : 'disabled'}>
-        <span class="emoji">${p.emoji}</span>
+        ${powerIcon(p)}
         <span class="info">
           <span class="name">${p.name}${owned ? ` <b>×${owned}</b>` : ''}</span>
           <span class="desc">${p.desc}</span>
@@ -1065,6 +1066,7 @@ export class App {
       les pièces se gagnent uniquement en jouant. Maj+clic pour acheter cinq charges.</p>
     `;
 
+    bindPowerIconFallbacks(body);
     body.querySelectorAll('[data-buy]').forEach((b) => {
       b.onclick = (e) => {
         const n = e.shiftKey ? 5 : 1;
@@ -1095,6 +1097,27 @@ function modeLabel(m) {
     ascension: 'Ascension', zen: 'Zen', adventure: 'Aventure', timed: 'Chrono', tide: 'Marée',
   }[m] || m;
 }
+/**
+ * Icon markup for a power: generated art when available, emoji as fallback.
+ * The fallback is wired up by bindPowerIconFallbacks() rather than an inline
+ * onerror, so a strict Content-Security-Policy cannot break it.
+ */
+function powerIcon(p, cls = 'emoji') {
+  if (!p.icon) return `<span class="${cls}">${p.emoji}</span>`;
+  return `<span class="${cls} art" data-fallback="${p.emoji}"><img
+    src="src/assets/icons/powers/${p.icon}.png" alt="" draggable="false" loading="lazy"></span>`;
+}
+
+/** If a power icon fails to load, drop back to the emoji. */
+function bindPowerIconFallbacks(root) {
+  root.querySelectorAll('.art[data-fallback] img').forEach((img) => {
+    img.addEventListener('error', () => {
+      const span = img.parentElement;
+      if (span) { span.textContent = span.dataset.fallback; span.classList.remove('art'); }
+    }, { once: true });
+  });
+}
+
 /** Total power charges held across every power. */
 function totalCharges(pw) {
   return Object.values(pw.charges || {}).reduce((a, b) => a + (b || 0), 0);

@@ -5,7 +5,7 @@
 // dropped on activate. Nothing here talks to a server: there is no telemetry,
 // no account, and no remote save.
 
-const CACHE_VERSION = 'solitaire-shift-v1';
+const CACHE_VERSION = 'solitaire-shift-v2';
 
 // Everything the game needs to boot and play. Art is added on demand below.
 const CORE = [
@@ -36,6 +36,12 @@ const CORE = [
   './src/ui/art.js',
   './src/data/contracts.json',
   './src/assets/art/manifest.json',
+  './src/assets/icons/powers/power-peek.png',
+  './src/assets/icons/powers/power-ace-call.png',
+  './src/assets/icons/powers/power-reshuffle.png',
+  './src/assets/icons/powers/power-reserve.png',
+  './src/assets/icons/powers/power-undo.png',
+  './src/assets/icons/powers/power-time.png',
 ];
 
 self.addEventListener('install', (event) => {

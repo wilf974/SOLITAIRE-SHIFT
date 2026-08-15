@@ -208,6 +208,60 @@
       "suit": null,
       "rank": null,
       "bytes": 2252193
+    },
+    "power-peek": {
+      "file": "power-peek.png",
+      "hash": "e768ad11d1c076c8",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1329018
+    },
+    "power-ace-call": {
+      "file": "power-ace-call.png",
+      "hash": "fa3633c55bd8fd99",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1271056
+    },
+    "power-reshuffle": {
+      "file": "power-reshuffle.png",
+      "hash": "ffbd8125672d045f",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1146435
+    },
+    "power-reserve": {
+      "file": "power-reserve.png",
+      "hash": "0023c93c45545005",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1240390
+    },
+    "power-undo": {
+      "file": "power-undo.png",
+      "hash": "6751af5f84b8f564",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1171533
+    },
+    "power-time": {
+      "file": "power-time.png",
+      "hash": "04e9c9211c02ed5e",
+      "kind": "power-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1259384
     }
   }
 }

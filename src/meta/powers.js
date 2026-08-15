@@ -9,10 +9,15 @@
 //   * No premium currency, no purchase, no ad, no energy, no timer.
 //
 // `id`s are persisted in save files and must never change.
+//
+// Each power carries both an `icon` (generated art, used in the UI) and an
+// `emoji` (the fallback, used if the art is missing — the game must always
+// run without generated assets).
 
 export const POWERS = [
   {
     id: 'peek',
+    icon: 'power-peek',
     name: 'Clairvoyance',
     emoji: '👁️',
     desc: 'Révèle la carte face cachée la plus profonde.',
@@ -21,6 +26,7 @@ export const POWERS = [
   },
   {
     id: 'ace-call',
+    icon: 'power-ace-call',
     name: "Appel d'As",
     emoji: '🎯',
     desc: 'Envoie un As disponible directement aux fondations.',
@@ -29,6 +35,7 @@ export const POWERS = [
   },
   {
     id: 'reshuffle',
+    icon: 'power-reshuffle',
     name: 'Rebattre',
     emoji: '🔀',
     desc: 'Mélange la pioche restante.',
@@ -37,6 +44,7 @@ export const POWERS = [
   },
   {
     id: 'free-cell',
+    icon: 'power-reserve',
     name: 'Réserve',
     emoji: '📥',
     desc: 'Met une carte de côté ; reposez-la quand vous voulez.',
@@ -45,6 +53,7 @@ export const POWERS = [
   },
   {
     id: 'undo-burst',
+    icon: 'power-undo',
     name: 'Remontée',
     emoji: '⏪',
     desc: 'Annule les trois derniers coups d’un seul geste.',
@@ -53,6 +62,7 @@ export const POWERS = [
   },
   {
     id: 'time-gift',
+    icon: 'power-time',
     name: 'Sursis',
     emoji: '⏳',
     desc: 'Ajoute 45 secondes au chronomètre.',

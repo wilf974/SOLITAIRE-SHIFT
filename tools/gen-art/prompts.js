@@ -220,12 +220,48 @@ export function bannerPrompts() {
   ];
 }
 
+/**
+ * Power icons. These sit in a bar at ~26px, so they must read as a silhouette
+ * first and detail second — the opposite of the court cards. Each is drawn on
+ * a transparent background so it can sit on the white power button without a
+ * visible tile behind it.
+ */
+export function powerIconPrompts() {
+  const ICON_STYLE = [
+    'Single game-icon object, centered, filling most of the square with a small margin.',
+    'Chunky rounded shapes, thick confident outline, smooth cel shading, one glossy highlight.',
+    'Bold and instantly readable as a silhouette at very small size.',
+    'Plain flat white background, no scene, no frame, no border, no shadow beneath.',
+    'ABSOLUTELY NO text, NO letters, NO numbers, NO words, NO watermark.',
+  ].join(' ');
+
+  const ICONS = [
+    ['power-peek', 'A friendly cartoon eye with a bright turquoise iris, long lashes and a sparkle, peeking over the top edge of a playing card. Palette: turquoise, white and coral.'],
+    ['power-ace-call', 'A red heart-suit ace card flying upward with a golden motion trail and sparkles behind it, as if launched. Palette: coral red, sunny yellow and white.'],
+    ['power-reshuffle', 'Two playing cards crossing in an X with curved arrows swirling around them, suggesting a shuffle. Palette: violet, sky blue and white.'],
+    ['power-reserve', 'An open drawer or slot with a single playing card tucked halfway into it, glowing softly. Palette: mint green, cream and white.'],
+    ['power-undo', 'A thick curved arrow looping backwards over a small stack of playing cards. Palette: sky blue, deep blue and white.'],
+    ['power-time', 'A cheerful hourglass with sunny yellow sand and a little plus-shaped sparkle beside it. Palette: sunny yellow, tangerine and white.'],
+  ];
+
+  return ICONS.map(([id, subject]) => ({
+    id,
+    kind: 'power-icon',
+    size: '1024x1024',
+    prompt: [subject, ICON_STYLE, NEG].join(' '),
+  }));
+}
+
 /** Everything, in generation order (cheap/high-impact first). */
 export function allPrompts() {
-  return [...tablePrompts(), ...iconPrompts(), ...bannerPrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts()];
+  return [
+    ...tablePrompts(), ...iconPrompts(), ...bannerPrompts(),
+    ...powerIconPrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts(),
+  ];
 }
 
 export const GROUPS = {
   table: tablePrompts, back: backPrompts, ace: acePrompts,
-  court: courtPrompts, icon: iconPrompts, banner: bannerPrompts, all: allPrompts,
+  court: courtPrompts, icon: iconPrompts, banner: bannerPrompts,
+  power: powerIconPrompts, all: allPrompts,
 };
