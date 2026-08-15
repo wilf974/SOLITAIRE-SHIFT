@@ -113,7 +113,7 @@ export class App {
       </button>`;
     }).join('') + `<button class="power-add" data-open-shop title="Boutique de pouvoirs">＋</button>`;
 
-    bindPowerIconFallbacks(bar);
+    bindIconFallbacks(bar);
     bar.querySelectorAll('[data-power]').forEach((b) => {
       b.onclick = () => this.usePower(b.dataset.power);
     });
@@ -654,18 +654,18 @@ export class App {
     const tp = tierProgress(p.xp);
     const advDone = p.adventure.cleared.length;
     const modes = [
-      { id: 'adventure', ico: '🗺️', t: 'Aventure', d: `Huit chapitres, huit règles. ${advDone}/${CHAPTERS.length} terminés.`, locked: false, feature: true },
-      { id: 'timed', ico: '⏱️', t: 'Chrono', d: p.bestTimedMs ? `Battez le temps. Record : ${fmtTime(p.bestTimedMs)}.` : 'Cinq minutes pour tout finir.', locked: false, feature: true },
-      { id: 'tide', ico: '🌊', t: 'Marée', d: `La mer monte et remplit vos colonnes. Record : ${p.bestTide || 0}/52.`, locked: false, feature: true },
-      { id: 'classic', ico: '♣', t: 'Classique', d: 'Klondike pur. Donne aléatoire — le pari traditionnel.', locked: false },
-      { id: 'journey', ico: '✦', t: 'Parcours', d: 'La voie principale. Les traits arrivent en progressant.', locked: false },
-      { id: 'daily', ico: '☉', t: 'Donne du jour', d: `Une donne résoluble par jour — ${todayStr()}.`, locked: false },
-      { id: 'contract', ico: '❧', t: 'Contrats', d: 'Des défis choisis aux règles étranges.', locked: p.tier < 2, lock: p.tier < 2 ? `Rang 2 requis` : '' },
-      { id: 'ascension', ico: '△', t: 'Ascension', d: "Des séries de victoires qui montent. Jusqu'où irez-vous ?", locked: p.tier < 3, lock: p.tier < 3 ? `Rang 3 requis` : '' },
-      { id: 'zen', ico: '◐', t: 'Zen', d: 'Détendu, toujours résoluble. Aucune pression.', locked: false },
+      { id: 'adventure', ico: '🗺️', icon: 'mode-adventure', t: 'Aventure', d: `Huit chapitres, huit règles. ${advDone}/${CHAPTERS.length} terminés.`, locked: false, feature: true },
+      { id: 'timed', ico: '⏱️', icon: 'mode-timed', t: 'Chrono', d: p.bestTimedMs ? `Battez le temps. Record : ${fmtTime(p.bestTimedMs)}.` : 'Cinq minutes pour tout finir.', locked: false, feature: true },
+      { id: 'tide', ico: '🌊', icon: 'mode-tide', t: 'Marée', d: `La mer monte et remplit vos colonnes. Record : ${p.bestTide || 0}/52.`, locked: false, feature: true },
+      { id: 'classic', ico: '♣', icon: 'mode-classic', t: 'Classique', d: 'Klondike pur. Donne aléatoire — le pari traditionnel.', locked: false },
+      { id: 'journey', ico: '✦', icon: 'mode-journey', t: 'Parcours', d: 'La voie principale. Les traits arrivent en progressant.', locked: false },
+      { id: 'daily', ico: '☉', icon: 'mode-daily', t: 'Donne du jour', d: `Une donne résoluble par jour — ${todayStr()}.`, locked: false },
+      { id: 'contract', ico: '❧', icon: 'mode-contract', t: 'Contrats', d: 'Des défis choisis aux règles étranges.', locked: p.tier < 2, lock: p.tier < 2 ? `Rang 2 requis` : '' },
+      { id: 'ascension', ico: '△', icon: 'mode-ascension', t: 'Ascension', d: "Des séries de victoires qui montent. Jusqu'où irez-vous ?", locked: p.tier < 3, lock: p.tier < 3 ? `Rang 3 requis` : '' },
+      { id: 'zen', ico: '◐', icon: 'mode-zen', t: 'Zen', d: 'Détendu, toujours résoluble. Aucune pression.', locked: false },
     ];
     const cards = modes.map((m) => `<button class="mode-card${m.feature ? ' feature' : ''}" data-mode="${m.id}" ${m.locked ? 'disabled' : ''}>
-      <span class="ico">${m.ico}</span><span class="t">${m.t}</span><span class="d">${m.d}</span>${m.lock ? `<span class="lock">${m.lock}</span>` : ''}
+${uiIcon(m.icon, m.ico, 'ico')}<span class="t">${m.t}</span><span class="d">${m.d}</span>${m.lock ? `<span class="lock">${m.lock}</span>` : ''}
     </button>`).join('');
     this.openModal(`
       <div class="panel">
@@ -690,6 +690,7 @@ export class App {
         </div>
       </div>
     `);
+    bindIconFallbacks(document.getElementById('modal-root'));
     this.wireMenu();
   }
 
@@ -781,7 +782,7 @@ export class App {
         ? d.traits.map((t) => getTrait(t)?.name || t).join(' · ')
         : 'Règles standard';
       return `<button class="mode-card diff${d.id === chosen ? ' chosen' : ''}" data-diff="${d.id}">
-        <span class="ico">${d.emoji}</span>
+        ${uiIcon(d.icon, d.emoji, 'ico')}
         <span class="t">${d.name}</span>
         <span class="d">${d.desc}</span>
         <span class="chip"><span class="v">${traitNames}</span></span>
@@ -794,6 +795,7 @@ export class App {
       <div class="menu-grid">${list}</div>
       <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
     </div>`);
+    bindIconFallbacks(document.getElementById('modal-root'));
     document.getElementById('modal-root').querySelectorAll('[data-diff]').forEach((b) => {
       b.onclick = () => {
         const id = b.dataset.diff;
@@ -1066,7 +1068,7 @@ export class App {
       les pièces se gagnent uniquement en jouant. Maj+clic pour acheter cinq charges.</p>
     `;
 
-    bindPowerIconFallbacks(body);
+    bindIconFallbacks(body);
     body.querySelectorAll('[data-buy]').forEach((b) => {
       b.onclick = (e) => {
         const n = e.shiftKey ? 5 : 1;
@@ -1098,18 +1100,24 @@ function modeLabel(m) {
   }[m] || m;
 }
 /**
- * Icon markup for a power: generated art when available, emoji as fallback.
- * The fallback is wired up by bindPowerIconFallbacks() rather than an inline
- * onerror, so a strict Content-Security-Policy cannot break it.
+ * Icon markup for anything with an `icon` (generated art) and a fallback glyph.
+ * Used by the power bar, the mode menu and the difficulty picker.
+ * The fallback is wired by bindIconFallbacks() rather than an inline onerror,
+ * so a strict Content-Security-Policy cannot break it.
  */
-function powerIcon(p, cls = 'emoji') {
-  if (!p.icon) return `<span class="${cls}">${p.emoji}</span>`;
-  return `<span class="${cls} art" data-fallback="${p.emoji}"><img
-    src="src/assets/icons/powers/${p.icon}.png" alt="" draggable="false" loading="lazy"></span>`;
+function uiIcon(icon, fallback, cls = 'emoji') {
+  if (!icon) return `<span class="${cls}">${fallback}</span>`;
+  return `<span class="${cls} art" data-fallback="${fallback}"><img
+    src="src/assets/icons/ui/${icon}.png" alt="" draggable="false" loading="lazy"></span>`;
 }
 
-/** If a power icon fails to load, drop back to the emoji. */
-function bindPowerIconFallbacks(root) {
+/** Convenience wrapper for a power object. */
+function powerIcon(p, cls = 'emoji') {
+  return uiIcon(p.icon, p.emoji, cls);
+}
+
+/** If generated art fails to load, drop back to the glyph. */
+function bindIconFallbacks(root) {
   root.querySelectorAll('.art[data-fallback] img').forEach((img) => {
     img.addEventListener('error', () => {
       const span = img.parentElement;

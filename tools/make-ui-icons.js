@@ -1,5 +1,5 @@
-// tools/make-power-icons.js — turn the generated power art into small
-// transparent icons for the power bar.
+// tools/make-ui-icons.js — turn the generated UI art into small transparent
+// icons: power bar, mode menu and difficulty picker.
 //
 // The image model always returns an opaque image, so the icons arrive with a
 // near-white background that would show as a pale square on the white power
@@ -16,11 +16,17 @@ import { decodePng, encodePng, resizeTo } from './png-lib.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SRC = join(ROOT, 'src', 'assets', 'art');
-const OUT = join(ROOT, 'src', 'assets', 'icons', 'powers');
+const OUT = join(ROOT, 'src', 'assets', 'icons', 'ui');
 
 const ICONS = [
+  // power bar
   'power-peek', 'power-ace-call', 'power-reshuffle',
   'power-reserve', 'power-undo', 'power-time',
+  // main menu
+  'mode-adventure', 'mode-timed', 'mode-tide', 'mode-classic',
+  'mode-journey', 'mode-daily', 'mode-contract', 'mode-ascension', 'mode-zen',
+  // difficulty picker
+  'diff-gentle', 'diff-standard', 'diff-sharp', 'diff-suited', 'diff-brutal',
 ];
 
 const SIZE = 128;          // drawn at 26-34px, so 128 covers 4x displays
@@ -123,8 +129,17 @@ function trim(img) {
 await mkdir(OUT, { recursive: true });
 
 let total = 0;
+let missing = 0;
 for (const name of ICONS) {
-  const img = decodePng(await readFile(join(SRC, `${name}.png`)));
+  let raw;
+  try {
+    raw = await readFile(join(SRC, `${name}.png`));
+  } catch {
+    console.log(`  ${name.padEnd(20)} (not generated yet — skipped)`);
+    missing++;
+    continue;
+  }
+  const img = decodePng(raw);
   const cut = trim(cutBackground(img));
   const small = resizeTo(cut, SIZE, SIZE);
   const png = encodePng(SIZE, SIZE, small.rgba);

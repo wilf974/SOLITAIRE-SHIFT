@@ -5,7 +5,7 @@
 // dropped on activate. Nothing here talks to a server: there is no telemetry,
 // no account, and no remote save.
 
-const CACHE_VERSION = 'solitaire-shift-v2';
+const CACHE_VERSION = 'solitaire-shift-v3';
 
 // Everything the game needs to boot and play. Art is added on demand below.
 const CORE = [
@@ -36,12 +36,26 @@ const CORE = [
   './src/ui/art.js',
   './src/data/contracts.json',
   './src/assets/art/manifest.json',
-  './src/assets/icons/powers/power-peek.png',
-  './src/assets/icons/powers/power-ace-call.png',
-  './src/assets/icons/powers/power-reshuffle.png',
-  './src/assets/icons/powers/power-reserve.png',
-  './src/assets/icons/powers/power-undo.png',
-  './src/assets/icons/powers/power-time.png',
+  './src/assets/icons/ui/power-peek.png',
+  './src/assets/icons/ui/power-ace-call.png',
+  './src/assets/icons/ui/power-reshuffle.png',
+  './src/assets/icons/ui/power-reserve.png',
+  './src/assets/icons/ui/power-undo.png',
+  './src/assets/icons/ui/power-time.png',
+  './src/assets/icons/ui/mode-adventure.png',
+  './src/assets/icons/ui/mode-timed.png',
+  './src/assets/icons/ui/mode-tide.png',
+  './src/assets/icons/ui/mode-classic.png',
+  './src/assets/icons/ui/mode-journey.png',
+  './src/assets/icons/ui/mode-daily.png',
+  './src/assets/icons/ui/mode-contract.png',
+  './src/assets/icons/ui/mode-ascension.png',
+  './src/assets/icons/ui/mode-zen.png',
+  './src/assets/icons/ui/diff-gentle.png',
+  './src/assets/icons/ui/diff-standard.png',
+  './src/assets/icons/ui/diff-sharp.png',
+  './src/assets/icons/ui/diff-suited.png',
+  './src/assets/icons/ui/diff-brutal.png',
 ];
 
 self.addEventListener('install', (event) => {

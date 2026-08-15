@@ -328,6 +328,17 @@
 .shop-item .emoji.art { width: 40px; height: 40px; }
 .shop-item .emoji.art img { width: 100%; height: 100%; object-fit: contain; }
 .emoji.art img { user-select: none; -webkit-user-drag: none; }
+
+/* generated art in the mode menu and the difficulty picker */
+.ico.art {
+  display: inline-grid;
+  place-items: center;
+  width: clamp(34px, 6vmin, 46px);
+  height: clamp(34px, 6vmin, 46px);
+  line-height: 0;
+}
+.ico.art img { width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.mode-card:disabled .ico.art { filter: grayscale(0.7); opacity: 0.65; }
 .power-btn .nm { font-size: 10.5px; font-weight: 800; }
 .power-btn .chg {
   position: absolute;

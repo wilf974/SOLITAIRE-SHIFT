@@ -5,10 +5,12 @@
 // harder level never grants abilities — it only changes the rules of the deal.
 //
 // `id`s are persisted in save files and must never change.
+// `icon` names generated art; `emoji` remains the fallback.
 
 export const DIFFICULTIES = [
   {
     id: 'gentle',
+    icon: 'diff-gentle',
     name: 'Tranquille',
     emoji: '🌱',
     desc: "N'importe quelle carte ouvre une colonne vide. Pour apprendre.",
@@ -17,6 +19,7 @@ export const DIFFICULTIES = [
   },
   {
     id: 'standard',
+    icon: 'diff-standard',
     name: 'Classique',
     emoji: '♠️',
     desc: 'Le Klondike de toujours : rouge sur noir, noir sur rouge.',
@@ -25,6 +28,7 @@ export const DIFFICULTIES = [
   },
   {
     id: 'sharp',
+    icon: 'diff-sharp',
     name: 'Corsé',
     emoji: '🔥',
     desc: 'Pioche par trois et deux recyclages seulement.',
@@ -33,6 +37,7 @@ export const DIFFICULTIES = [
   },
   {
     id: 'suited',
+    icon: 'diff-suited',
     name: 'Même enseigne',
     emoji: '❤️',
     desc: 'Cœur sur cœur, pique sur pique. Le vrai test de patience.',
@@ -45,6 +50,7 @@ export const DIFFICULTIES = [
     // one in a sane budget, and shipping unvalidated "fair" deals is worse
     // than shipping a slightly gentler top rung.
     id: 'brutal',
+    icon: 'diff-brutal',
     name: 'Impitoyable',
     emoji: '💀',
     desc: 'Même enseigne, pioche par trois, sans annuler.',

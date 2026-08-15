@@ -252,16 +252,61 @@ export function powerIconPrompts() {
   }));
 }
 
+/** Shared recipe for the small square icons used across the menus. */
+const SMALL_ICON_STYLE = [
+  'Single game-icon object, centered, filling most of the square with a small margin.',
+  'Chunky rounded shapes, thick confident outline, smooth cel shading, one glossy highlight.',
+  'Bold and instantly readable as a silhouette at very small size.',
+  'Plain flat white background, no scene, no frame, no border, no shadow beneath.',
+  'ABSOLUTELY NO text, NO letters, NO numbers, NO words, NO watermark.',
+].join(' ');
+
+/** Mode icons for the main menu — one per game mode. */
+export function modeIconPrompts() {
+  const MODES = [
+    ['mode-adventure', 'A rolled-open treasure map with a dotted path and a small red X, one corner curling. Palette: warm parchment cream, coral and turquoise.'],
+    ['mode-timed', 'A cheerful round stopwatch tilted slightly, with a sunny yellow face and a little motion swoosh. Palette: coral red, sunny yellow and white.'],
+    ['mode-tide', 'A friendly curling ocean wave with a rounded crest and foam bubbles, one playing card riding it. Palette: turquoise, deep sea blue and white.'],
+    ['mode-classic', 'A neat stack of playing cards seen at a slight angle, the top one showing a bold black club. Palette: white, deep navy and turquoise.'],
+    ['mode-journey', 'A signpost on a small grassy hill with a four-pointed sparkle above it. Palette: mint green, cream and sunny yellow.'],
+    ['mode-daily', 'A tear-off desk calendar page with a smiling sun above it. Palette: coral red, cream and sunny yellow.'],
+    ['mode-contract', 'A rolled scroll tied with a ribbon, a wax seal at its centre. Palette: parchment cream, deep red and gold.'],
+    ['mode-ascension', 'A stepped mountain peak with a small flag planted at the summit and a sparkle. Palette: violet, sky blue and white.'],
+    ['mode-zen', 'Three smooth stacked zen pebbles with a small leaf resting on top. Palette: soft sage green, cream and turquoise.'],
+  ];
+  return MODES.map(([id, subject]) => ({
+    id, kind: 'mode-icon', size: '1024x1024',
+    prompt: [subject, SMALL_ICON_STYLE, NEG].join(' '),
+  }));
+}
+
+/** Difficulty icons for the placement-rule picker. */
+export function difficultyIconPrompts() {
+  const LEVELS = [
+    ['diff-gentle', 'A small green sprout with two round leaves growing from soft soil. Palette: fresh green, mint and cream.'],
+    ['diff-standard', 'A single playing card standing upright showing a bold black spade. Palette: white, deep navy and turquoise.'],
+    ['diff-sharp', 'A cheerful cartoon flame with a rounded friendly shape. Palette: tangerine orange, sunny yellow and coral.'],
+    ['diff-suited', 'Two red heart-suit symbols stacked neatly one above the other, glossy and rounded. Palette: coral red, strawberry and cream.'],
+    ['diff-brutal', 'A cute cartoon skull with big round eye sockets, more charming than scary, a tiny sparkle beside it. Palette: bone white, deep navy and violet.'],
+  ];
+  return LEVELS.map(([id, subject]) => ({
+    id, kind: 'difficulty-icon', size: '1024x1024',
+    prompt: [subject, SMALL_ICON_STYLE, NEG].join(' '),
+  }));
+}
+
 /** Everything, in generation order (cheap/high-impact first). */
 export function allPrompts() {
   return [
     ...tablePrompts(), ...iconPrompts(), ...bannerPrompts(),
-    ...powerIconPrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts(),
+    ...powerIconPrompts(), ...modeIconPrompts(), ...difficultyIconPrompts(),
+    ...backPrompts(), ...acePrompts(), ...courtPrompts(),
   ];
 }
 
 export const GROUPS = {
   table: tablePrompts, back: backPrompts, ace: acePrompts,
   court: courtPrompts, icon: iconPrompts, banner: bannerPrompts,
-  power: powerIconPrompts, all: allPrompts,
+  power: powerIconPrompts, mode: modeIconPrompts, difficulty: difficultyIconPrompts,
+  all: allPrompts,
 };

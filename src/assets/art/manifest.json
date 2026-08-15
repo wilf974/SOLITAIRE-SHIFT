@@ -262,6 +262,132 @@
       "suit": null,
       "rank": null,
       "bytes": 1259384
+    },
+    "mode-adventure": {
+      "file": "mode-adventure.png",
+      "hash": "20ad2768f825304f",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1224357
+    },
+    "mode-timed": {
+      "file": "mode-timed.png",
+      "hash": "9aca198b7888e7e8",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1307381
+    },
+    "mode-tide": {
+      "file": "mode-tide.png",
+      "hash": "eb62d075a12f4072",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1280008
+    },
+    "mode-classic": {
+      "file": "mode-classic.png",
+      "hash": "2fb37a81fbf7d717",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1367067
+    },
+    "mode-journey": {
+      "file": "mode-journey.png",
+      "hash": "61c7664df3b2678f",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1324362
+    },
+    "mode-daily": {
+      "file": "mode-daily.png",
+      "hash": "ecff08e097b92e69",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1544050
+    },
+    "mode-contract": {
+      "file": "mode-contract.png",
+      "hash": "0aa2dd2344535d11",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1246233
+    },
+    "mode-ascension": {
+      "file": "mode-ascension.png",
+      "hash": "6ea2af4c88052970",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 980237
+    },
+    "mode-zen": {
+      "file": "mode-zen.png",
+      "hash": "72d2d176167aac15",
+      "kind": "mode-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1455785
+    },
+    "diff-gentle": {
+      "file": "diff-gentle.png",
+      "hash": "c4205f30f2f186e8",
+      "kind": "difficulty-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1309234
+    },
+    "diff-standard": {
+      "file": "diff-standard.png",
+      "hash": "777c09e0a5f99b74",
+      "kind": "difficulty-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1238086
+    },
+    "diff-sharp": {
+      "file": "diff-sharp.png",
+      "hash": "880d1d6ec633dcca",
+      "kind": "difficulty-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1175908
+    },
+    "diff-suited": {
+      "file": "diff-suited.png",
+      "hash": "9afb0f1be07ea59b",
+      "kind": "difficulty-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 1300635
+    },
+    "diff-brutal": {
+      "file": "diff-brutal.png",
+      "hash": "ccff1d5ff88de90a",
+      "kind": "difficulty-icon",
+      "size": "1024x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 970699
     }
   }
 }
