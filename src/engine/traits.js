@@ -53,11 +53,27 @@ export const TRAITS = [
   },
   {
     id: 'same-suit',
-    name: 'Même couleur',
-    desc: 'Les suites du tableau descendent dans la même enseigne.',
+    name: 'Même enseigne',
+    desc: 'Cœur sur cœur, pique sur pique — la suite ne change jamais d’enseigne.',
+    value: 4,
+    tier: 3,
+    apply: (r) => ({ ...r, tableauOrder: 'desc-samesuit' }),
+  },
+  {
+    id: 'same-color',
+    name: 'Même teinte',
+    desc: 'Rouge sur rouge, noir sur noir.',
     value: 2,
     tier: 2,
     apply: (r) => ({ ...r, tableauOrder: 'desc-samecolor' }),
+  },
+  {
+    id: 'alt-suit',
+    name: 'Enseigne changeante',
+    desc: 'Chaque carte doit poser sur une enseigne différente de la sienne.',
+    value: 1,
+    tier: 2,
+    apply: (r) => ({ ...r, tableauOrder: 'desc-altsuit' }),
   },
   {
     id: 'any-color',
@@ -77,11 +93,23 @@ export const TRAITS = [
   },
   {
     id: 'foundations-down',
-    name: 'Fondations inversées',
-    desc: "Les fondations se construisent du Roi vers l'As.",
-    value: 1,
-    tier: 2,
-    apply: (r) => ({ ...r, foundationStart: 'king', foundationDirection: 'desc' }),
+    name: 'Monde inversé',
+    desc: "Fondations du Roi vers l'As, tableau ascendant, l'As ouvre les colonnes.",
+    value: 2,
+    tier: 3,
+    // A fully mirrored game. All three parts must flip together:
+    //   * foundations run K→A,
+    //   * so the tableau must run ASCENDING, otherwise every card is buried
+    //     under the one that had to leave before it and no deal is winnable,
+    //   * and empty columns open on an Ace, because Kings now belong on the
+    //     foundations and a King can receive nothing in an ascending tableau.
+    apply: (r) => ({
+      ...r,
+      foundationStart: 'king',
+      foundationDirection: 'desc',
+      tableauOrder: 'asc-altcolor',
+      emptyColumnRule: 'ace',
+    }),
   },
   {
     id: 'wrap-around',
@@ -94,10 +122,20 @@ export const TRAITS = [
   {
     id: 'reverse-tableau',
     name: 'Tableau ascendant',
-    desc: 'Les suites du tableau montent en alternant les couleurs.',
+    desc: 'Les suites montent en alternant les couleurs ; le Roi ouvre les colonnes.',
     value: 2,
     tier: 3,
-    apply: (r) => ({ ...r, tableauOrder: 'asc-altcolor' }),
+    // An ascending tableau needs DESCENDING foundations to stay winnable:
+    // cards must leave the tableau in the reverse of the order they were
+    // stacked, so foundations run K→A. Empty columns keep the King, which is
+    // the natural bottom of an ascending run.
+    apply: (r) => ({
+      ...r,
+      tableauOrder: 'asc-altcolor',
+      foundationStart: 'king',
+      foundationDirection: 'desc',
+      emptyColumnRule: 'king',
+    }),
   },
   {
     id: 'no-undo',
@@ -122,6 +160,34 @@ export const TRAITS = [
     value: 0,
     tier: 0,
     apply: (r) => ({ ...r, emptyColumnRule: 'king' }),
+  },
+  {
+    id: 'draw-five',
+    name: 'Pioche par cinq',
+    desc: 'La pioche distribue cinq cartes à la fois.',
+    value: 3,
+    tier: 4,
+    apply: (r) => ({ ...r, drawCount: 5 }),
+  },
+  {
+    id: 'two-passes',
+    name: 'Deux passes',
+    desc: 'La pioche ne peut être recyclée que deux fois.',
+    value: 1,
+    tier: 2,
+    apply: (r) => ({ ...r, maxStockPasses: 2 }),
+  },
+  // NOTE: a 'blind-flip' trait (revealFlipped:false) was tried and removed.
+  // Without auto-flip a buried card can never be turned over, so no deal is
+  // winnable — the solver found zero solvable seeds in 160 attempts. It is not
+  // a difficulty setting, it is an unwinnable game.
+  {
+    id: 'no-powers',
+    name: 'Mains nues',
+    desc: 'Aucun pouvoir ne peut être utilisé pendant cette donne.',
+    value: 2,
+    tier: 3,
+    apply: (r) => ({ ...r, powersAllowed: false }),
   },
 ];
 

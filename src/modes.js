@@ -7,6 +7,7 @@ import { createGame } from './engine/game.js';
 import { composeRules, difficultyValue, TRAITS, getTrait } from './engine/traits.js';
 import { solve } from './engine/solver.js';
 import CONTRACTS from './data/contracts.json' with { type: 'json' };
+import { difficultyTraits, getDifficulty, supportsDifficulty } from './meta/difficulty.js';
 
 export { CONTRACTS };
 
@@ -26,7 +27,15 @@ function difficultyTries(traits) {
   const d = difficultyValue(traits);
   if (d <= 0) return 20;
   if (d <= 4) return 40;
-  return 80;
+  if (d <= 8) return 90;
+  return 160; // same-suit + locked-empties etc. are genuinely rare
+}
+
+/** Node budget scaled to how hard the ruleset is to search. */
+function difficultyBudget(traits, base) {
+  const d = difficultyValue(traits);
+  if (d <= 4) return base;
+  return Math.round(base * (d <= 8 ? 1.6 : 2.4));
 }
 
 /** Build a deal descriptor for a mode. Async because validation may run the solver. */
@@ -35,13 +44,26 @@ export async function makeDeal(mode, opts = {}) {
   switch (mode) {
     case 'classic': {
       // traditional random deal (the spec permits this for Classic). Player accepts the risk.
+      const traits = difficultyTraits(opts.difficulty);
       const seed = 'classic-' + Math.random().toString(36).slice(2, 10);
-      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Remportez la donne.', meta: {} };
+      return {
+        mode, seed, rules: composeRules(traits), traits,
+        objective: 'Remportez la donne.',
+        meta: { difficulty: opts.difficulty || 'standard' },
+      };
     }
     case 'zen': {
-      const found = firstSolvable('zen-' + Date.now(), [], 20, 80000);
-      const seed = found ? found.seed : 'zen-fallback::0';
-      return { mode, seed, rules: composeRules([]), traits: [], objective: 'Détendez-vous. Aucune pression.', meta: {} };
+      const traits = difficultyTraits(opts.difficulty);
+      const found = firstSolvable('zen-' + Date.now(), traits, difficultyTries(traits), difficultyBudget(traits, 90000));
+      const seed = found ? found.seed : 'zen-' + Date.now() + '::0';
+      return {
+        mode, seed,
+        rules: found ? found.rules : composeRules(traits), traits,
+        objective: 'Détendez-vous. Aucune pression.',
+        // `validated:false` means the solver could not prove this deal winnable
+        // in its budget. The UI says so rather than pretending otherwise.
+        meta: { difficulty: opts.difficulty || 'standard', validated: !!found },
+      };
     }
     case 'daily': {
       const date = opts.date || todayStr();
@@ -61,9 +83,24 @@ export async function makeDeal(mode, opts = {}) {
     }
     case 'contract': {
       const c = CONTRACTS.find((x) => x.id === opts.contractId) || CONTRACTS[0];
-      const found = firstSolvable(c.baseSeed, c.traits, difficultyTries(c.traits), 140000);
+      // Contracts ship a pre-validated seed: some of these rulesets need over a
+      // hundred solver attempts to find a winnable deal, which is far too slow
+      // to do while the player waits. The seeds in contracts.json were each
+      // confirmed solvable offline.
+      if (c.seed) {
+        return {
+          mode, seed: c.seed, rules: composeRules(c.traits), traits: c.traits,
+          objective: c.objective,
+          meta: { contractId: c.id, name: c.name, desc: c.desc, validated: true },
+        };
+      }
+      const found = firstSolvable(c.baseSeed, c.traits, difficultyTries(c.traits), difficultyBudget(c.traits, 140000));
       const seed = found ? found.seed : c.baseSeed + '::0';
-      return { mode, seed, rules: found ? found.rules : composeRules(c.traits), traits: c.traits, objective: c.objective, meta: { contractId: c.id, name: c.name, desc: c.desc } };
+      return {
+        mode, seed, rules: found ? found.rules : composeRules(c.traits), traits: c.traits,
+        objective: c.objective,
+        meta: { contractId: c.id, name: c.name, desc: c.desc, validated: !!found },
+      };
     }
     case 'ascension': {
       const level = Math.max(1, opts.level || 1);
@@ -77,35 +114,49 @@ export async function makeDeal(mode, opts = {}) {
       // named goal and its own traits. Progress is stored on the profile.
       const idx = Math.max(0, Math.min(CHAPTERS.length - 1, opts.chapter ?? (profile.adventure?.chapter || 0)));
       const ch = CHAPTERS[idx];
-      const found = firstSolvable(ch.baseSeed, ch.traits, difficultyTries(ch.traits), 130000);
-      const seed = found ? found.seed : ch.baseSeed + '::0';
+      // Every chapter ships a pre-validated seed (confirmed solvable offline),
+      // because some of these rulesets need dozens of solver attempts and the
+      // player should never wait a minute to start a story chapter.
+      const found = ch.seed ? null : firstSolvable(ch.baseSeed, ch.traits, difficultyTries(ch.traits), difficultyBudget(ch.traits, 130000));
+      const seed = ch.seed || (found ? found.seed : ch.baseSeed + '::0');
       return {
         mode, seed,
-        rules: found ? found.rules : composeRules(ch.traits),
+        rules: composeRules(ch.traits),
         traits: ch.traits,
         objective: ch.objective,
-        meta: { chapter: idx, name: ch.name, story: ch.story, last: idx === CHAPTERS.length - 1 },
+        meta: {
+          chapter: idx, name: ch.name, story: ch.story,
+          last: idx === CHAPTERS.length - 1,
+          validated: ch.seed ? true : !!found,
+        },
       };
     }
     case 'timed': {
       // Beat the clock. Solver-validated so the pressure is the only obstacle.
       const seconds = opts.seconds || 300;
-      const found = firstSolvable('timed-' + Date.now(), [], 20, 90000);
-      const seed = found ? found.seed : 'timed-fallback::0';
-      const rules = { ...composeRules([]), timeLimitMs: seconds * 1000 };
-      return { mode, seed, rules, traits: [], objective: `Gagnez en ${Math.round(seconds / 60)} minutes.`, meta: { seconds } };
+      const traits = difficultyTraits(opts.difficulty);
+      const found = firstSolvable('timed-' + Date.now(), traits, difficultyTries(traits), difficultyBudget(traits, 90000));
+      const seed = found ? found.seed : 'timed-' + Date.now() + '::0';
+      const base = found ? found.rules : composeRules(traits);
+      const rules = { ...base, timeLimitMs: seconds * 1000 };
+      return {
+        mode, seed, rules, traits,
+        objective: `Gagnez en ${Math.round(seconds / 60)} minutes.`,
+        meta: { seconds, difficulty: opts.difficulty || 'standard', validated: !!found },
+      };
     }
     case 'tide': {
       // "Marée" — every N moves the sea rises and deals a card onto every
       // column. Deliberately NOT solver-validated: the board changes as you
       // play, so there is no fixed solution to validate. Survival, not proof.
       const every = opts.tideEvery || 12;
+      const traits = difficultyTraits(opts.difficulty);
       const seed = 'tide-' + Math.random().toString(36).slice(2, 10);
-      const rules = { ...composeRules([]), tideEvery: every };
+      const rules = { ...composeRules(traits), tideEvery: every };
       return {
-        mode, seed, rules, traits: [],
+        mode, seed, rules, traits,
         objective: `La marée monte tous les ${every} coups. Videz le tableau.`,
-        meta: { tideEvery: every, unvalidated: true },
+        meta: { tideEvery: every, unvalidated: true, difficulty: opts.difficulty || 'standard' },
       };
     }
     default:
@@ -115,14 +166,15 @@ export async function makeDeal(mode, opts = {}) {
 
 /** Adventure chapters — a curated story run. Order matters. */
 export const CHAPTERS = [
-  { name: 'Le Départ',        story: "Une table, un jeu, rien de plus. Apprenez la maison.",              traits: [],                              objective: 'Remportez la donne.',            baseSeed: 'adv-01-depart' },
-  { name: 'Trois par Trois',  story: 'La pioche devient avare. Comptez vos tirages.',                      traits: ['draw-three'],                  objective: 'Gagnez en piochant par trois.',  baseSeed: 'adv-02-troisXtrois' },
-  { name: 'Le Dernier Tour',  story: 'La pioche ne repassera pas. Chaque carte compte double.',            traits: ['single-pass'],                 objective: 'Gagnez en une seule passe.',     baseSeed: 'adv-03-dernier-tour' },
-  { name: 'Portes Closes',    story: 'Les colonnes vides se referment derrière vous.',                     traits: ['locked-empties'],              objective: 'Gagnez sans rouvrir de colonne.', baseSeed: 'adv-04-portes-closes' },
-  { name: 'Le Fil de Soie',   story: 'Une seule enseigne par suite. La patience devient une arme.',        traits: ['same-suit'],                   objective: 'Gagnez en suites de même enseigne.', baseSeed: 'adv-05-fil-de-soie' },
-  { name: 'Sans Filet',       story: "Plus de retour en arrière. Réfléchissez avant de poser.",            traits: ['no-undo', 'draw-three'],       objective: 'Gagnez sans annuler.',           baseSeed: 'adv-06-sans-filet' },
-  { name: 'Le Monde Renversé', story: 'Les fondations descendent, le tableau monte. Tout est inversé.',    traits: ['foundations-down', 'reverse-tableau'], objective: 'Gagnez dans le monde inversé.', baseSeed: 'adv-07-monde-renverse' },
-  { name: 'La Dernière Table', story: 'Tout ce que vous avez appris, en une seule donne.',                 traits: ['no-recycle', 'locked-empties', 'same-suit'], objective: 'Terminez l’aventure.',   baseSeed: 'adv-08-derniere-table' },
+  { name: 'Le Départ',        story: "Une table, un jeu, rien de plus. Apprenez la maison.",              traits: [],                              objective: 'Remportez la donne.',            baseSeed: 'adv-01-depart', seed: 'adv-01-depart::14' },
+  { name: 'Trois par Trois',  story: 'La pioche devient avare. Comptez vos tirages.',                      traits: ['draw-three'],                  objective: 'Gagnez en piochant par trois.',  baseSeed: 'adv-02-troisXtrois', seed: 'adv-02-troisXtrois::7' },
+  { name: 'Le Dernier Tour',  story: 'La pioche ne repassera pas. Chaque carte compte double.',            traits: ['single-pass'],                 objective: 'Gagnez en une seule passe.',     baseSeed: 'adv-03-dernier-tour', seed: 'adv-03-dernier-tour::0' },
+  { name: 'Portes Closes',    story: 'Les colonnes vides se referment derrière vous.',                     traits: ['locked-empties'],              objective: 'Gagnez sans rouvrir de colonne.', baseSeed: 'adv-04-portes-closes', seed: 'adv-04-portes-closes::38' },
+  { name: 'Deux Teintes',     story: 'Rouge sur rouge, noir sur noir. Le tableau se scinde en deux.',      traits: ['same-color'],                  objective: 'Gagnez en suites de même teinte.', baseSeed: 'adv-05-deux-teintes', seed: 'adv-05-deux-teintes::3' },
+  { name: 'Le Fil de Soie',   story: 'Cœur sur cœur, pique sur pique. La patience devient une arme.',      traits: ['same-suit'],                   objective: 'Gagnez en suites de même enseigne.', baseSeed: 'adv-06-fil-de-soie', seed: 'adv-06-fil-de-soie::3' },
+  { name: 'Sans Filet',       story: "Plus de retour en arrière. Réfléchissez avant de poser.",            traits: ['no-undo', 'draw-three'],       objective: 'Gagnez sans annuler.',           baseSeed: 'adv-07-sans-filet', seed: 'adv-07-sans-filet::5' },
+  { name: 'Le Monde Renversé', story: 'Les fondations descendent, le tableau monte. Tout est inversé.',    traits: ['foundations-down', 'reverse-tableau'], objective: 'Gagnez dans le monde inversé.', baseSeed: 'adv-08-monde-renverse', seed: 'adv-08-monde-renverse::57' },
+  { name: 'La Dernière Table', story: 'Tout ce que vous avez appris, en une seule donne.',                 traits: ['same-suit', 'draw-three', 'no-undo'], objective: 'Terminez l’aventure.',   baseSeed: 'adv-09-finale', seed: 'adv-09-finale::9' },
 ];
 
 function pickJourneyTraits(stage, profile) {

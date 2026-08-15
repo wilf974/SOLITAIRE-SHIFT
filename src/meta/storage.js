@@ -44,6 +44,7 @@ export function defaultProfile() {
     adventure: { chapter: 0, cleared: [] },
     bestTimedMs: null,
     bestTide: 0,
+    difficulty: 'standard', // last chosen difficulty level
   };
 }
 
@@ -96,6 +97,7 @@ function migrate(p) {
   if (!Array.isArray(p.adventure.cleared)) p.adventure.cleared = [];
   if (!Number.isFinite(p.adventure.chapter)) p.adventure.chapter = 0;
   if (!Number.isFinite(p.bestTide)) p.bestTide = 0;
+  if (typeof p.difficulty !== 'string') p.difficulty = 'standard';
 
   if (p.version !== SCHEMA_VERSION) p.version = SCHEMA_VERSION;
   return p;

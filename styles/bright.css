@@ -392,6 +392,11 @@ body.arming-reserve .slot.reserve {
   50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
 }
 
+/* auto-finish: the board is playing itself, so keep hands off it */
+body.auto-finishing .card { pointer-events: none; }
+body.auto-finishing .card.faceup { cursor: default; }
+body.auto-finishing .power-bar { opacity: 0.5; pointer-events: none; }
+
 /* the timed-mode clock turns urgent in the last 30 seconds */
 .hud .stat .v.urgent { color: #ffe27a; animation: tick 1s steps(2) infinite; }
 @keyframes tick { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
@@ -402,6 +407,30 @@ body.arming-reserve .slot.reserve {
   box-shadow: 0 3px 0 rgba(240,138,36,0.28), 0 10px 24px rgba(240,138,36,0.20);
 }
 .mode-card.chapter.done { background: linear-gradient(160deg, #fff, #e8fbf0); }
+
+/* difficulty picker cards */
+.mode-card.diff .reward {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-deep);
+  background: rgba(255,201,60,0.22);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.mode-card.diff.chosen {
+  box-shadow: 0 0 0 3px var(--gold), 0 3px 0 rgba(31,41,72,0.10), 0 10px 24px rgba(31,41,72,0.14);
+}
+.mode-card .chip {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: rgba(31,41,72,0.06);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
 
 /* ---------- generated card-back art ----------
    Declared here (last stylesheet) so nothing later resets background-size.

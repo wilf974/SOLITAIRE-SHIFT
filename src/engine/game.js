@@ -10,13 +10,16 @@ export const DEFAULT_RULES = Object.freeze({
   emptyColumnRule: 'king', // 'king' | 'any' | 'none' — what starts a new tableau column
   foundationStart: 'ace', // 'ace' | 'king'
   foundationDirection: 'asc', // 'asc' (A..K) | 'desc' (K..A)
-  tableauOrder: 'desc-altcolor', // 'desc-altcolor' | 'desc-samecolor' | 'desc-anycolor' | 'asc-altcolor'
+  // 'desc-altcolor' (standard) | 'desc-samecolor' | 'desc-samesuit' |
+  // 'desc-altsuit' | 'desc-anycolor' | the same five with 'asc-'
+  tableauOrder: 'desc-altcolor',
   tableauWrap: false, // ranks wrap K->A on tableau builds
   moveSequences: true, // may move a valid run of >1 card from tableau
   revealFlipped: true, // auto-flip exposed face-down tableau card
   undoAllowed: true,
   maxUndos: Infinity,
   drawToTableauOnly: false, // waste cards only go to tableau (variant)
+  powersAllowed: true, // may the player spend power charges this deal?
   score: 'standard', // scoring model name
 });
 
@@ -106,10 +109,22 @@ export function tableauFits(rules, card, onto) {
   return colorOk(rules, card, onto);
 }
 
+/**
+ * Does the pair satisfy the tableau's colour/suit constraint?
+ * The suffix of `tableauOrder` selects the rule:
+ *   -anycolor  → anything goes (easiest)
+ *   -altcolor  → red on black / black on red (standard Klondike)
+ *   -samecolor → both red or both black (NOT the same suit)
+ *   -samesuit  → hearts on hearts, spades on spades (hardest)
+ *   -altsuit   → any suit except the one you're landing on
+ */
 function colorOk(rules, card, onto) {
-  if (rules.tableauOrder === 'desc-anycolor' || rules.tableauOrder === 'asc-anycolor') return true;
-  if (rules.tableauOrder === 'desc-samecolor' || rules.tableauOrder === 'asc-samecolor') return sameColor(card, onto);
-  return altColor(card, onto); // alt-color variants
+  const order = rules.tableauOrder || '';
+  if (order.endsWith('-anycolor')) return true;
+  if (order.endsWith('-samesuit')) return card.suit === onto.suit;
+  if (order.endsWith('-altsuit')) return card.suit !== onto.suit;
+  if (order.endsWith('-samecolor')) return sameColor(card, onto);
+  return altColor(card, onto); // alt-color variants (the default)
 }
 
 /** Can `card` start an empty tableau column? */
@@ -118,6 +133,7 @@ export function canStartEmptyColumn(rules, card) {
     case 'none': return false;
     case 'any': return true;
     case 'king': return rankOf(card) === 13;
+    case 'ace': return rankOf(card) === 1; // used by the inverted-foundation rules
     default: return false;
   }
 }

@@ -17,6 +17,7 @@ import {
 } from './meta/powers.js';
 import { EFFECTS } from './engine/powers-fx.js';
 import { CHAPTERS } from './modes.js';
+import { DIFFICULTIES, getDifficulty, difficultyReward, supportsDifficulty } from './meta/difficulty.js';
 
 export class App {
   constructor() {
@@ -100,9 +101,10 @@ export class App {
       return;
     }
 
+    const barred = !!this.game && this.game.rules.powersAllowed === false;
     bar.innerHTML = owned.map((p) => {
       const n = chargesOf(pw, p.id);
-      const dead = !inHand || (p.timedOnly && !(this.game && this.game.timeLimitMs));
+      const dead = !inHand || barred || (p.timedOnly && !(this.game && this.game.timeLimitMs));
       return `<button class="power-btn${dead ? ' dead' : ''}" data-power="${p.id}"
         title="${p.name} — ${p.desc}" ${dead ? 'disabled' : ''}>
         <span class="emoji">${p.emoji}</span>
@@ -122,6 +124,12 @@ export class App {
   usePower(id) {
     const p = getPower(id);
     if (!p || !this.game || this.game.won) { audio.invalid(); return; }
+    // the "Mains nues" trait bars powers for the whole deal
+    if (this.game.rules.powersAllowed === false) {
+      audio.invalid();
+      this.toast('Mains nues : aucun pouvoir sur cette donne');
+      return;
+    }
     const pw = this.profile.powers;
     if (chargesOf(pw, id) <= 0) { audio.invalid(); this.toast('Aucune charge'); return; }
 
@@ -229,6 +237,7 @@ export class App {
   // ---------- game lifecycle ----------
 
   async startMode(mode, opts = {}) {
+    this.stopAuto();
     this.cancelReserve();
     this.closeModal();
     this.showSpinner('Distribution…');
@@ -249,7 +258,16 @@ export class App {
       this.sync();
       this.startTimer();
       this.saveResume();
-      this.toast(`${modeLabel(mode)}${deal.traits && deal.traits.length ? ' · ' + deal.traits.map(t => getTrait(t)?.name || t).join(', ') : ''}`);
+      const traitLine = deal.traits && deal.traits.length
+        ? ' · ' + deal.traits.map((t) => getTrait(t)?.name || t).join(', ')
+        : '';
+      this.toast(`${modeLabel(mode)}${traitLine}`);
+      // Be honest when the solver could not prove this deal winnable. It only
+      // happens on the hardest rule combinations, and the player deserves to
+      // know they may be facing an unwinnable board.
+      if (deal.meta && deal.meta.validated === false) {
+        setTimeout(() => this.toast('Donne non vérifiée — elle peut être imperdable ou insoluble'), 2400);
+      }
     } catch (e) {
       console.error(e);
       this.toast('Échec de la donne — réessayez');
@@ -284,7 +302,21 @@ export class App {
     this.saveResume();
     if (checkWin(this.game)) this.onWin();
     else if (isStuck(this.game)) this.onStuck();
+    else this.maybeAutoFinish();
     return true;
+  }
+
+  /**
+   * The moment the hand becomes a formality — nothing hidden, nothing to
+   * decide — finish it automatically instead of making the player click 52
+   * more times. Announced with a toast so it never feels like a glitch.
+   */
+  maybeAutoFinish() {
+    if (this.autoRunning || !this.isTriviallyWon()) return;
+    this.toast('Partie gagnée — ramassage automatique');
+    setTimeout(() => {
+      if (this.game && !this.game.won && !this.autoRunning) this.auto({ fast: true });
+    }, 500);
   }
 
   cueSound(move) {
@@ -344,34 +376,82 @@ export class App {
     }
   }
 
-  auto() {
-    if (!this.game) return;
-    // auto-complete: repeatedly send safe cards to foundation
+  /**
+   * Is the hand already won — every card face-up and reachable, so the rest is
+   * pure clicking? That is the moment to take over and finish it for the player.
+   */
+  isTriviallyWon() {
+    const g = this.game;
+    if (!g || g.won) return false;
+    // any hidden card means there is still a decision left
+    for (const pile of g.tableau) {
+      for (const c of pile) if (!c.faceUp) return false;
+    }
+    // the stock/waste must be exhaustible: with nothing hidden, a stock that
+    // can still be cycled is fine, but one that can never be reached is not
+    if (g.stock.length && g.rules.maxStockPasses <= g.stockPasses) return false;
+    return true;
+  }
+
+  /**
+   * Auto-finish. Sends everything home, one card at a time so the player can
+   * watch the cascade. Runs automatically once the hand is trivially won, or
+   * on demand from the toolbar / the A key.
+   */
+  auto(opts = {}) {
+    if (!this.game || this.autoRunning) return;
+    this.autoRunning = true;
+    document.body.classList.add('auto-finishing');
+    const delay = opts.fast ? 55 : 90;
+    // 52 cards plus draws and recycles; generous but still bounded
     let guard = 0;
+    const MAX_STEPS = 600;
+
     const step = () => {
-      if (guard++ > 60 || checkWin(this.game)) return;
+      if (!this.game || guard++ > MAX_STEPS || checkWin(this.game)) return this.stopAuto();
       const moves = legalMoves(this.game);
-      const f = moves.find((m) => m.type === 'tab-to-foundation' || m.type === 'waste-to-foundation');
-      if (f) { this.do(f); setTimeout(step, 90); }
-      else {
-        // move any tableau-to-tableau that exposes a face-down, else stop
-        const rev = moves.find((m) => m.type === 'tab-to-tab' && (() => { const s = this.game.tableau[m.from]; return s.length - m.count - 1 >= 0 && !s[s.length - m.count - 1].faceUp; })());
-        if (rev) { this.do(rev); setTimeout(step, 90); }
-      }
+
+      // 1. anything that can go home, goes home
+      const home = moves.find((m) => m.type === 'tab-to-foundation'
+        || m.type === 'waste-to-foundation' || m.type === 'reserve-to-foundation');
+      if (home) { this.do(home); this.autoTimer = setTimeout(step, delay); return; }
+
+      // 2. otherwise draw, so the waste keeps feeding the foundations
+      const draw = moves.find((m) => m.type === 'draw');
+      if (draw) { this.do(draw); this.autoTimer = setTimeout(step, delay); return; }
+      const recycle = moves.find((m) => m.type === 'recycle');
+      if (recycle) { this.do(recycle); this.autoTimer = setTimeout(step, delay); return; }
+
+      // 3. failing that, a move that uncovers a face-down card (manual use only)
+      const reveal = moves.find((m) => m.type === 'tab-to-tab' && (() => {
+        const s = this.game.tableau[m.from];
+        return s.length - m.count - 1 >= 0 && !s[s.length - m.count - 1].faceUp;
+      })());
+      if (reveal) { this.do(reveal); this.autoTimer = setTimeout(step, delay); return; }
+
+      this.stopAuto();
     };
     step();
+  }
+
+  stopAuto() {
+    this.autoRunning = false;
+    if (this.autoTimer) { clearTimeout(this.autoTimer); this.autoTimer = null; }
+    document.body.classList.remove('auto-finishing');
   }
 
   // ---------- win/lose ----------
 
   onWin() {
     this.stopTimer();
+    this.stopAuto();
     audio.resetFoundationStreak();
     const timeMs = this.elapsedBase + (Date.now() - this.startTs);
     const res = {
       won: true,
       mode: this.mode,
       traits: (this.deal && this.deal.traits) || [],
+      difficulty: (this.deal && this.deal.meta && this.deal.meta.difficulty) || 'standard',
       moves: this.game.moves,
       timeMs,
       score: this.game.score,
@@ -387,11 +467,13 @@ export class App {
 
   onStuck() {
     this.stopTimer();
+    this.stopAuto();
     audio.invalid();
     const res = {
       won: false,
       mode: this.mode,
       traits: (this.deal && this.deal.traits) || [],
+      difficulty: (this.deal && this.deal.meta && this.deal.meta.difficulty) || 'standard',
       moves: this.game.moves,
       timeMs: this.elapsedBase + (Date.now() - this.startTs),
       score: this.game.score,
@@ -425,11 +507,13 @@ export class App {
       p.streak = 0;
     }
     // XP
-    const xp = xpForResult(res);
+    const xp = Math.round(xpForResult(res) * difficultyReward(res.difficulty || 'standard'));
     p.xp += xp;
     p.tier = tierFromXp(p.xp);
-    // coins — earned only by playing, spent on power charges
-    const coins = coinsForResult(res);
+    // coins — earned only by playing, spent on power charges.
+    // Harder difficulty pays more; the multiplier applies to XP too.
+    const diffMul = difficultyReward(res.difficulty || 'standard');
+    const coins = Math.round(coinsForResult(res) * diffMul);
     awardCoins(p.powers, coins);
     this.lastCoins = coins;
     this.updateCoins();
@@ -508,6 +592,7 @@ export class App {
       won: false,
       mode: this.mode,
       traits: (this.deal && this.deal.traits) || [],
+      difficulty: (this.deal && this.deal.meta && this.deal.meta.difficulty) || 'standard',
       moves: this.game.moves,
       timeMs: this.game.timeLimitMs + (this.game.timeBonusMs || 0),
       score: this.game.score,
@@ -554,6 +639,7 @@ export class App {
 
   showMenu() {
     this.stopTimer();
+    this.stopAuto();
     this._shopOpen = false;
     this.cancelReserve();
     this.game = null; // the board sits idle; nothing plays itself
@@ -610,7 +696,13 @@ export class App {
         else if (mode === 'adventure') this.showAdventurePicker();
         else if (mode === 'timed') this.showTimedPicker();
         else if (mode === 'tide') this.showTidePicker();
-        else this.startMode(mode);
+        else if (supportsDifficulty(mode)) {
+          this.showDifficultyPicker(
+            modeLabel(mode),
+            'Choisissez la règle de pose',
+            (difficulty) => this.startMode(mode, { difficulty }),
+          );
+        } else this.startMode(mode);
       };
     });
     root.querySelectorAll('[data-act]').forEach((b) => {
@@ -671,6 +763,40 @@ export class App {
     root.querySelector('[data-act="again"]').onclick = () => this.startMode(this.mode);
   }
 
+  /**
+   * Difficulty picker, shared by every mode that supports one. `next` receives
+   * the chosen difficulty id. The player's last choice is remembered.
+   */
+  showDifficultyPicker(title, sub, next) {
+    const chosen = this.profile.difficulty || 'standard';
+    const list = DIFFICULTIES.map((d) => {
+      const traitNames = d.traits.length
+        ? d.traits.map((t) => getTrait(t)?.name || t).join(' · ')
+        : 'Règles standard';
+      return `<button class="mode-card diff${d.id === chosen ? ' chosen' : ''}" data-diff="${d.id}">
+        <span class="ico">${d.emoji}</span>
+        <span class="t">${d.name}</span>
+        <span class="d">${d.desc}</span>
+        <span class="chip"><span class="v">${traitNames}</span></span>
+        <span class="reward">×${d.reward} récompenses</span>
+      </button>`;
+    }).join('');
+    this.openModal(`<div class="panel">
+      <h2>${title}</h2>
+      <div class="sub">${sub}</div>
+      <div class="menu-grid">${list}</div>
+      <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
+    </div>`);
+    document.getElementById('modal-root').querySelectorAll('[data-diff]').forEach((b) => {
+      b.onclick = () => {
+        const id = b.dataset.diff;
+        this.profile.difficulty = id;
+        saveProfile(this.profile);
+        next(id);
+      };
+    });
+  }
+
   // ---------- new mode pickers ----------
 
   showAdventurePicker() {
@@ -718,7 +844,11 @@ export class App {
       <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
     </div>`);
     document.getElementById('modal-root').querySelectorAll('[data-seconds]').forEach((b) => {
-      b.onclick = () => this.startMode('timed', { seconds: parseInt(b.dataset.seconds, 10) });
+      b.onclick = () => {
+        const seconds = parseInt(b.dataset.seconds, 10);
+        this.showDifficultyPicker('Chrono', `${Math.round(seconds / 60)} minutes · règle de pose`,
+          (difficulty) => this.startMode('timed', { seconds, difficulty }));
+      };
     });
   }
 
@@ -742,7 +872,11 @@ export class App {
       <div class="btn-row"><button class="btn ghost" data-close>Retour</button></div>
     </div>`);
     document.getElementById('modal-root').querySelectorAll('[data-tide]').forEach((b) => {
-      b.onclick = () => this.startMode('tide', { tideEvery: parseInt(b.dataset.tide, 10) });
+      b.onclick = () => {
+        const tideEvery = parseInt(b.dataset.tide, 10);
+        this.showDifficultyPicker('Marée', `Toutes les ${tideEvery} actions · règle de pose`,
+          (difficulty) => this.startMode('tide', { tideEvery, difficulty }));
+      };
     });
   }
 

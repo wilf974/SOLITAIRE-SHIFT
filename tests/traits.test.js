@@ -73,6 +73,9 @@ test('composeRules merges multiple traits without mutating defaults', () => {
   const r = composeRules(['draw-three', 'no-undo', 'same-suit']);
   assert.equal(r.drawCount, 3);
   assert.equal(r.undoAllowed, false);
-  assert.equal(r.tableauOrder, 'desc-samecolor');
+  // 'same-suit' means the literal suit (hearts on hearts), not merely the
+  // colour — 'same-color' is the separate, easier trait.
+  assert.equal(r.tableauOrder, 'desc-samesuit');
+  assert.equal(composeRules(['same-color']).tableauOrder, 'desc-samecolor');
   assert.equal(DEFAULT_RULES.drawCount, 1, 'defaults untouched');
 });

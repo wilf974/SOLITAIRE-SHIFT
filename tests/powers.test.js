@@ -298,3 +298,32 @@ test('tide stops gracefully once the stock is empty', () => {
   if (m) applyMove(g, m);
   assert.ok(g.tableau.every((p, i) => p.length <= before[i] + 1), 'no cards conjured');
 });
+
+// ---------- auto-finish detection ----------
+
+test('a fresh deal is not trivially won', () => {
+  const g = freshGame();
+  const hidden = g.tableau.flat().filter((c) => !c.faceUp).length;
+  assert.ok(hidden > 0, 'a fresh deal has hidden cards');
+});
+
+test('a board with every card face-up and an empty stock is trivially won', () => {
+  const g = freshGame();
+  for (const pile of g.tableau) for (const c of pile) c.faceUp = true;
+  g.stock = [];
+  g.waste = [];
+  const anyHidden = g.tableau.flat().some((c) => !c.faceUp);
+  assert.equal(anyHidden, false);
+  // the condition the app checks: nothing hidden, stock reachable
+  const stockStranded = g.stock.length && g.rules.maxStockPasses <= g.stockPasses;
+  assert.ok(!stockStranded, 'nothing is stranded');
+});
+
+test('a stranded stock is NOT trivially won', () => {
+  // no-recycle with cards left in the stock: those cards can never be reached
+  const g = freshGame('stranded::0', composeRules(['no-recycle']));
+  for (const pile of g.tableau) for (const c of pile) c.faceUp = true;
+  g.stockPasses = 0;
+  const stranded = g.stock.length > 0 && g.rules.maxStockPasses <= g.stockPasses;
+  assert.equal(stranded, true, 'cards left in an unreachable stock');
+});

@@ -63,6 +63,11 @@ function rankMove(state, m) {
  * stack so deep solutions don't blow the JS call stack.
  * Returns { result: 'solved'|'unsolvable'|'unknown', nodes, solution? }
  */
+/** Cap on transposition-table entries, to keep memory flat on open rulesets. */
+const MAX_SEEN = 400000;
+/** Cap on search depth, so a pathological branch cannot grow the stack forever. */
+const MAX_DEPTH = 2000;
+
 export function solve(state, nodeBudget = 200000) {
   const seen = new Set();
   let nodes = 0;
@@ -94,8 +99,14 @@ export function solve(state, nodeBudget = 200000) {
 
     const k = canonKey(ns);
     if (seen.has(k)) continue;
+    // Bound the transposition table. Without this an open ruleset can grow it
+    // to millions of long string keys and exhaust the heap — which would take
+    // the whole tab down, not just the search. Clearing costs us some repeated
+    // work but keeps memory flat and the answer correct.
+    if (seen.size >= MAX_SEEN) seen.clear();
     seen.add(k);
 
+    if (stack.length >= MAX_DEPTH) continue; // too deep to be a useful line
     const childMoves = legalMoves(ns).sort((a, b) => rankMove(ns, a) - rankMove(ns, b));
     if (!childMoves.length) continue; // dead end, don't push
     stack.push({ s: ns, moves: childMoves, idx: 0, path: [...frame.path, m] });

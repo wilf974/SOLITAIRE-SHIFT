@@ -33,7 +33,7 @@ Any static host works too — the project is plain files.
 ## Test it
 
 ```bash
-npm test               # 94 tests: engine, shuffle, traits, solver, save, progression, powers
+npm test               # 125 tests: engine, shuffle, traits, solver, save, progression, powers
 npm run check          # parse every JS file (node --check per file)
 ```
 
@@ -47,6 +47,24 @@ suite takes ~20s.
 ### Playing a hand
 Drag a card, or tap it to auto-move, or double-tap to send it to a foundation.
 Keyboard: `Z` undo · `H` hint · `A` auto-complete · `Space` draw · `N` new · `Esc` menu.
+
+The moment a hand becomes a formality — every card face-up, nothing left to
+decide — the game **finishes it for you**, cascading the rest home instead of
+asking for fifty more clicks.
+
+### Difficulty
+Classique, Zen, Chrono, Marée and the Daily let you pick how cards stack:
+
+| Level | Rule | Pays |
+|---|---|---|
+| 🌱 Tranquille | Any card opens an empty column | ×0.7 |
+| ♠️ Classique | Red on black, black on red | ×1 |
+| 🔥 Corsé | Draw three, two recycles only | ×1.4 |
+| ❤️ Même enseigne | Hearts on hearts, spades on spades | ×1.9 |
+| 💀 Impitoyable | Same suit, draw three, no undo | ×2.8 |
+
+Harder levels multiply both coins and XP. Authored modes (Aventure, Contrats,
+Ascension, Parcours) carry their own rules and ignore this setting.
 
 ### Powers
 Coins are earned by playing. They buy **charges** of tactical powers, shown on a
@@ -86,11 +104,17 @@ Fourteen unlockable **rule** modifiers — not powers. Each is one sentence, eac
 carries a difficulty value, and harder combinations pay more XP. Veterans get
 *more options*, never *stronger abilities*.
 
-`Pioche par trois (+1)` · `Passe unique (+2)` · `Sans recyclage (+3)` ·
-`Colonnes libres (−2)` · `Colonnes scellées (+4)` · `Même couleur (+2)` ·
-`Couleur libre (−2)` · `Cartes seules (+2)` · `Fondations inversées (+1)` ·
-`Boucle (+1)` · `Tableau ascendant (+2)` · `Sans retour (+1)` ·
-`Retours comptés (+1)` · `Rois seulement (0)`
+**Placement:** `Même enseigne (+4)` — cœur sur cœur · `Même teinte (+2)` — rouge
+sur rouge · `Enseigne changeante (+1)` · `Couleur libre (−2)` · `Monde inversé (+2)`
+· `Tableau ascendant (+2)` · `Boucle (+1)`
+
+**Stock:** `Pioche par trois (+1)` · `Pioche par cinq (+3)` · `Deux passes (+1)` ·
+`Passe unique (+2)` · `Sans recyclage (+3)`
+
+**Columns:** `Colonnes libres (−2)` · `Colonnes scellées (+4)` · `Rois seulement (0)`
+
+**Restrictions:** `Cartes seules (+2)` · `Sans retour (+1)` · `Retours comptés (+1)`
+· `Mains nues (+2)` — no powers this deal
 
 ### Progression
 XP and ranks, plus unlocks gated on **deeds** rather than raw XP: win with No
@@ -165,6 +189,7 @@ src/
     storage.js          versioned localStorage profile + export/import
     mastery.js          XP, tiers, condition-based unlocks
     powers.js           coins, power charges, purchases
+    difficulty.js       the five-rung difficulty ladder
   ui/
     render.js           measured-geometry board renderer
     interaction.js      pointer drag/tap/keyboard
@@ -174,7 +199,7 @@ tools/
   serve.js              zero-dep static server
   check-syntax.js       parse every JS file
   gen-art/              build-side OpenAI art pipeline
-tests/                  node:test, 94 tests
+tests/                  node:test, 125 tests
 ```
 
 ### Design notes
