@@ -24,3 +24,5 @@ dist/
 # Local dev scratch (browser-automation output, working screenshots)
 .playwright-mcp/
 /*.png
+# Tooling state (not part of the game)
+.claude-flow/
