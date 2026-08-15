@@ -1,0 +1,161 @@
+// tools/gen-art/prompts.js — the art bible, as machine-readable prompts.
+// Build-side only. Never imported by the browser.
+//
+// Direction: "Sunlit" — bright, sweet, modern mobile-game art. Think a friendly
+// cartoon card kingdom: candy colours, chunky rounded shapes, soft cel shading,
+// big smiles. Everything should look cheerful on a WHITE card and inviting on a
+// sunny table. Absolutely no gloom, no dark backgrounds, no gothic ornament.
+//
+// HARD RULE: never ask the model for text, numerals, letters, or rank/suit
+// indices. Those are drawn programmatically in CSS so they are always crisp
+// and always correct. Generated art is *illustration only*.
+
+const STYLE = [
+  'Bright, cheerful modern mobile-game illustration.',
+  'Clean chunky rounded shapes, bold confident outlines, smooth cel shading with soft gradients.',
+  'Candy-bright saturated palette on a light, airy background.',
+  'Friendly, charming, fun and full of personality — the art style of a beloved casual puzzle game.',
+  'Crisp vector-like finish, glossy highlights, playful and welcoming.',
+  'Centered composition with generous margin, clearly readable at small size.',
+  'ABSOLUTELY NO text, NO letters, NO numbers, NO words, NO signature, NO watermark.',
+].join(' ');
+
+const NEG = 'No text. No letters. No numerals. No captions. No watermark. No signature. Not dark, not gloomy, not gothic, not vintage, not sepia.';
+
+const SUIT_MOOD = {
+  spades: { name: 'Spades', mood: 'cool and confident — a breezy blue-sky adventurer', color: 'bright electric blue, sky blue and white' },
+  hearts: { name: 'Hearts', mood: 'warm and loving — all hugs and cheer', color: 'coral pink, strawberry red and cream' },
+  diamonds: { name: 'Diamonds', mood: 'sparkly and clever — sunshine and shiny gems', color: 'tangerine orange, golden yellow and peach' },
+  clubs: { name: 'Clubs', mood: 'bouncy and hearty — fresh leaves and good humour', color: 'fresh mint green, lime and cream' },
+};
+
+// Court characters — cute, expressive, each with a clear silhouette.
+const COURT_ARCH = {
+  J: {
+    name: 'Jack',
+    who: 'a cheeky young joker-page with a big grin, round friendly face, floppy jester-ish cap and a little cape',
+    pose: 'winking and giving a playful thumbs-up, bouncing on one foot',
+  },
+  Q: {
+    name: 'Queen',
+    who: 'a sweet, glamorous young queen with sparkling eyes, rosy cheeks, a cute chunky crown and a puffy dress',
+    pose: 'beaming with a big warm smile, holding up a heart-shaped flower',
+  },
+  K: {
+    name: 'King',
+    who: 'a jolly round king with a huge fluffy beard, chunky crown tilted slightly, cosy robe',
+    pose: 'laughing heartily with both arms open in a big welcome',
+  },
+};
+
+/** All court illustrations: 12 (J/Q/K x 4 suits). */
+export function courtPrompts() {
+  const out = [];
+  for (const [suit, s] of Object.entries(SUIT_MOOD)) {
+    for (const [rank, a] of Object.entries(COURT_ARCH)) {
+      out.push({
+        id: `court-${suit}-${rank}`,
+        kind: 'court',
+        suit, rank,
+        size: '1024x1536',
+        prompt: [
+          `Cute cartoon character portrait of ${a.who}, ${a.pose}.`,
+          `This is the ${a.name} of ${s.name}: ${s.mood}.`,
+          `Palette: ${s.color}, on a soft light pastel background with a simple bright halo behind the character.`,
+          `Waist-up, centered, big readable head and expressive face, filling the frame with comfortable margin.`,
+          `Adorable, funny, full of joy — a character a player would smile at every time they see it.`,
+          STYLE,
+          NEG,
+        ].join(' '),
+      });
+    }
+  }
+  return out;
+}
+
+/** Ace centerpieces — one showpiece illustration per suit. */
+export function acePrompts() {
+  return Object.entries(SUIT_MOOD).map(([suit, s]) => ({
+    id: `ace-${suit}`,
+    kind: 'ace',
+    suit, rank: 'A',
+    size: '1024x1536',
+    prompt: [
+      `A big glossy cartoon ${s.name.toLowerCase().replace(/s$/, '')} playing-card suit symbol as a cute mascot emblem,`,
+      `centered on a soft light pastel background, with a bright starburst, sparkles and little confetti around it.`,
+      `Chunky rounded shape with a glossy highlight, cheerful and bouncy, like a sticker or a game icon.`,
+      `Mood: ${s.mood}. Palette: ${s.color}.`,
+      `Symmetrical, centered, joyful and celebratory — the showpiece card of the suit.`,
+      STYLE,
+      NEG,
+    ].join(' '),
+  }));
+}
+
+/** Card backs — collectible, three distinct designs. */
+export function backPrompts() {
+  return [
+    {
+      id: 'back-sunburst-pop',
+      kind: 'back',
+      size: '1024x1536',
+      prompt: [
+        'Playing-card back design: a big smiling cartoon sun with rosy cheeks at the centre,',
+        'chunky rounded sunrays radiating outward, fluffy little clouds and sparkles,',
+        'on a warm coral-pink and tangerine background with a clean rounded white border.',
+        'Symmetrical, bold, sticker-like, extremely cheerful.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+    {
+      id: 'back-bubblegum-nebula',
+      kind: 'back',
+      size: '1024x1536',
+      prompt: [
+        'Playing-card back design: a dreamy candy galaxy — swirling bubblegum pink, lilac and turquoise clouds',
+        'with cute chunky stars, sparkles and a little crescent moon with a smiling face,',
+        'clean rounded white border. Symmetrical, magical, sweet and playful.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+    {
+      id: 'back-mint-crest',
+      kind: 'back',
+      size: '1024x1536',
+      prompt: [
+        'Playing-card back design: a cute rounded shield crest with a smiling four-leaf clover in the middle,',
+        'surrounded by chunky leaves, bubbles and sparkles, mint green and turquoise with cream accents,',
+        'clean rounded white border. Symmetrical, fresh, bouncy and friendly.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+  ];
+}
+
+/** The table surface the whole game sits on. */
+export function tablePrompts() {
+  return [
+    {
+      id: 'table-sunlit-felt',
+      kind: 'table',
+      size: '1536x1024',
+      prompt: [
+        'A cheerful game table surface seen straight from above, filling the whole frame.',
+        'Bright fresh turquoise-mint felt with a soft clean texture and a gentle light glow in the centre,',
+        'decorated with very subtle large pastel shapes: soft rounded card-suit silhouettes and gentle stripes,',
+        'in slightly lighter tints of the same turquoise so they barely stand out.',
+        'Sunny, clean, modern and inviting — like a playmat in a bright sunlit room.',
+        'Extremely subtle and low-contrast so playing cards placed on top remain perfectly readable.',
+        'Even bright lighting, no shadows, no objects, no cards, empty surface only.',
+        STYLE, NEG,
+      ].join(' '),
+    },
+  ];
+}
+
+/** Everything, in generation order (cheap/high-impact first). */
+export function allPrompts() {
+  return [...tablePrompts(), ...backPrompts(), ...acePrompts(), ...courtPrompts()];
+}
+
+export const GROUPS = { table: tablePrompts, back: backPrompts, ace: acePrompts, court: courtPrompts, all: allPrompts };

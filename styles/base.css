@@ -1,0 +1,329 @@
+/* base.css — tokens, reset, app shell. Dark "Aurum & Obsidian" default. */
+:root {
+  /* ---- "Sunlit" — bright, playful, modern. The default look. ---- */
+  /* sky: a warm sunrise sweep behind the table */
+  --sky-1: #ffd8a8;   /* apricot   */
+  --sky-2: #ff9eb5;   /* blossom   */
+  --sky-3: #9b8cff;   /* violet    */
+  /* the table itself: fresh candy teal */
+  --felt: #1fc0ad;
+  --felt-2: #35dcc6;
+  --felt-3: #10a091;
+  --ink: #1e2433;
+  --ink-soft: #5d6779;
+  --ink-faint: #939db1;
+  /* accent (kept the --gold-* names so every existing rule keeps working) */
+  --gold: #ffc93c;      /* sunshine */
+  --gold-2: #ffe27a;    /* light sunshine */
+  --gold-deep: #f08a24; /* tangerine */
+  --card-face: #ffffff;
+  --card-face-2: #f4f7fb;
+  --card-back-a: #ff8fab;
+  --card-back-b: #7c6cff;
+  /* Traditional suit colours — a card must read instantly.
+     Spades and clubs are BLACK, hearts and diamonds are RED. */
+  --suit-spades: #1e2433;   /* black */
+  --suit-clubs: #1e2433;    /* black */
+  --suit-hearts: #e03131;   /* red   */
+  --suit-diamonds: #e03131; /* red   */
+  --red: var(--suit-hearts);
+  --black: var(--suit-spades);
+  --good: #17c964;
+  --bad: #ff4d6d;
+  --shadow: rgba(31, 41, 72, 0.28);
+  --shadow-soft: rgba(31, 41, 72, 0.14);
+  --ring: rgba(255, 201, 60, 0.85);
+  --panel: rgba(255, 255, 255, 0.96);
+  --panel-border: rgba(31, 41, 72, 0.12);
+  --glass: rgba(255, 255, 255, 0.55);
+
+  /* card sizing — responsive, mobile-first.
+     The board is a 7-column grid; the card width follows the column width so
+     the table fills the screen instead of huddling in the middle. */
+  --board-w: 1180px;
+  --card-w: clamp(44px, 11.6vw, 132px);
+  --card-h: calc(var(--card-w) * 1.4);
+  --radius: calc(var(--card-w) * 0.09);
+  --stack-offset-up: calc(var(--card-h) * 0.30); /* face-up overlap */
+  --stack-offset-dn: calc(var(--card-h) * 0.055); /* face-down overlap — tight,
+     so a 7-card column doesn't stair-step off the bottom of the screen */
+  --gap: clamp(6px, 1.4vmin, 14px);
+
+  --tap: 48px;
+  --font-card: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --pop: cubic-bezier(0.34, 1.56, 0.64, 1); /* springy overshoot */
+  color-scheme: light;
+}
+
+/* "Midnight Arcade" — the unlockable night look. Still saturated and fun,
+   just neon-on-deep-indigo instead of sunlit. */
+:root[data-theme="night"] {
+  --sky-1: #3b2d7a;
+  --sky-2: #6d3f9e;
+  --sky-3: #1b1f4b;
+  --felt: #2a2f6b;
+  --felt-2: #3a4090;
+  --felt-3: #1a1d4a;
+  --ink: #f2f4ff;
+  --ink-soft: #b9c0e6;
+  --ink-faint: #7e87bb;
+  --gold: #ffd84d;
+  --gold-2: #fff0a8;
+  --gold-deep: #ff9f1c;
+  --card-face: #ffffff;
+  --card-face-2: #eef1fb;
+  /* night theme keeps the traditional black/red, just tuned for contrast */
+  --suit-spades: #1a1f36;
+  --suit-clubs: #1a1f36;
+  --suit-hearts: #e03131;
+  --suit-diamonds: #e03131;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --shadow-soft: rgba(0, 0, 0, 0.25);
+  --panel: rgba(38, 42, 92, 0.96);
+  --panel-border: rgba(255, 255, 255, 0.16);
+  --glass: rgba(255, 255, 255, 0.10);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-ui);
+  background: var(--felt);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* Bright sunrise sky behind everything — the game feels like daytime. */
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(90% 60% at 15% 0%, var(--sky-1), transparent 65%),
+    radial-gradient(90% 65% at 88% 6%, var(--sky-2), transparent 62%),
+    linear-gradient(165deg, var(--sky-2) 0%, var(--sky-3) 55%, var(--felt-3) 100%);
+}
+#app::before {
+  /* soft light bloom, keeps big flat areas from looking dead */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    radial-gradient(45% 35% at 22% 12%, rgba(255,255,255,0.55), transparent 70%),
+    radial-gradient(40% 30% at 80% 82%, rgba(255,255,255,0.28), transparent 72%);
+}
+/* generated table surface (set by app.js when the art manifest is present) */
+#app.has-table::before {
+  opacity: 1;
+  background-image: var(--table-art);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* light sheen ABOVE the table texture, below the board */
+#app.has-table .scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(255,255,255,0.20), transparent 72%);
+}
+#app::after {
+  /* rounded inner edge, like a playmat on a desk */
+  inset: clamp(6px, 1.4vmin, 14px);
+  border: 2px solid rgba(255,255,255,0.55);
+  border-radius: 26px;
+  box-shadow:
+    inset 0 2px 24px rgba(255,255,255,0.35),
+    0 18px 50px rgba(31,41,72,0.18);
+}
+#app::after {
+  /* warm gold inlay border */
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.4vmin, 14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  pointer-events: none;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
+}
+
+/* top bar */
+.topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: clamp(8px, 1.8vmin, 16px) clamp(12px, 2.4vmin, 22px);
+  min-height: var(--tap);
+}
+.topbar .brand {
+  font-family: var(--font-card);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: clamp(13px, 2.6vmin, 18px);
+  color: var(--gold-2);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+.topbar .brand small {
+  display: block;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  font-size: 0.55em;
+  color: var(--ink-faint);
+}
+.topbar .hud {
+  display: flex;
+  gap: clamp(6px, 1.4vmin, 14px);
+  align-items: center;
+}
+.hud .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.05;
+}
+.hud .stat .v {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: clamp(14px, 3vmin, 20px);
+  color: var(--ink);
+}
+.hud .stat .k {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* icon buttons */
+.iconbtn {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--panel-border);
+  background: var(--glass);
+  color: var(--ink-soft);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s var(--ease), background 0.15s, color 0.15s, border-color 0.15s;
+}
+.iconbtn:hover { color: var(--gold-2); border-color: var(--ring); background: rgba(216,168,74,0.08); }
+.iconbtn:active { transform: scale(0.94); }
+.iconbtn svg { width: 22px; height: 22px; }
+
+/* the play surface */
+.stage {
+  position: relative;
+  flex: 1;
+  z-index: 1;
+}
+/* The board and the card layer are the SAME box, centered and capped, so the
+   top row (stock/waste/foundations) and the tableau share one 7-column grid. */
+.board,
+.card-layer {
+  position: absolute;
+  top: clamp(8px, 2vmin, 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 2 * clamp(8px, 2vmin, 22px), var(--board-w));
+  height: calc(100% - 2 * clamp(8px, 2vmin, 22px));
+}
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2.4vmin, 22px);
+}
+.card-layer {
+  pointer-events: none;
+  z-index: 3;
+}
+.card-layer .card { pointer-events: auto; }
+
+/* rows — one shared 7-column grid so every pile lines up */
+.row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--gap);
+  align-items: start;
+  justify-items: center;
+}
+/* top row order: stock(1) waste(2) spacer(3) f0(4) f1(5) f2(6) f3(7) */
+.spacer { width: 100%; }
+
+/* slots (stock/waste/foundation/tableau columns) */
+.slot {
+  position: relative;
+  width: var(--card-w);
+  max-width: 100%;
+  justify-self: center;
+  min-height: var(--card-h);
+  border-radius: var(--radius);
+  border: 1.5px dashed transparent;
+  background: rgba(0,0,0,0.18);
+  box-shadow: inset 0 2px 12px rgba(0,0,0,0.28);
+}
+.slot.foundation::before,
+.slot.stock::before,
+.slot.waste::before {
+  content: attr(data-label);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(18px, 4vmin, 30px);
+  color: var(--ink-faint);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.slot.tableau {
+  min-height: var(--card-h);
+  background: rgba(0,0,0,0.12);
+}
+.slot.drop-ok {
+  border-color: var(--good);
+  box-shadow: 0 0 0 2px var(--good), inset 0 0 18px rgba(76,174,122,0.25);
+}
+.slot.drop-bad {
+  border-color: var(--bad);
+  opacity: 0.7;
+}
+
+/* column container for tableau (holds stacked cards).
+   Fills its grid cell so tableau columns line up with the foundations above. */
+.col {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* responsive: mobile portrait compresses */
+@media (max-width: 560px) {
+  :root { --card-w: clamp(40px, 13.5vw, 64px); --gap: 5px; }
+  .row.tableau { gap: 5px; }
+  .topbar { padding: 6px 10px; }
+}
+@media (orientation: landscape) and (max-height: 480px) {
+  :root { --card-w: clamp(40px, 10vmin, 68px); }
+  .board { gap: 8px; }
+}

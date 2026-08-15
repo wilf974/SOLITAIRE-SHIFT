@@ -1,0 +1,26 @@
+# Secrets — never commit
+.env
+*.env.local
+secrets.json
+
+# OpenAI generation cache (regenerable, large) — keep art bible + final assets, ignore raw cache
+tools/gen-art/cache/
+tools/gen-art/raw/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Node (we avoid npm; no runtime deps, but just in case)
+node_modules/
+npm-debug.log*
+
+# Build artifacts
+dist/
+
+# Local dev scratch (browser-automation output, working screenshots)
+.playwright-mcp/
+/*.png

@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "model": "gpt-image-1",
+  "entries": {
+    "ace-spades": {
+      "file": "ace-spades.png",
+      "hash": "66eb7c71e2dfefdd",
+      "kind": "ace",
+      "size": "1024x1536",
+      "suit": "spades",
+      "rank": "A",
+      "bytes": 2059995
+    },
+    "ace-hearts": {
+      "file": "ace-hearts.png",
+      "hash": "2ebeeb51b8dd53e3",
+      "kind": "ace",
+      "size": "1024x1536",
+      "suit": "hearts",
+      "rank": "A",
+      "bytes": 1978271
+    },
+    "ace-diamonds": {
+      "file": "ace-diamonds.png",
+      "hash": "96e636027e6fe39a",
+      "kind": "ace",
+      "size": "1024x1536",
+      "suit": "diamonds",
+      "rank": "A",
+      "bytes": 2087952
+    },
+    "ace-clubs": {
+      "file": "ace-clubs.png",
+      "hash": "660c625a252f9d61",
+      "kind": "ace",
+      "size": "1024x1536",
+      "suit": "clubs",
+      "rank": "A",
+      "bytes": 2087019
+    },
+    "court-spades-J": {
+      "file": "court-spades-J.png",
+      "hash": "13de6f0cd0f25105",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "spades",
+      "rank": "J",
+      "bytes": 2399113
+    },
+    "court-spades-Q": {
+      "file": "court-spades-Q.png",
+      "hash": "49845acae02cd906",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "spades",
+      "rank": "Q",
+      "bytes": 2552212
+    },
+    "court-spades-K": {
+      "file": "court-spades-K.png",
+      "hash": "0ebb48cb3370090b",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "spades",
+      "rank": "K",
+      "bytes": 2441417
+    },
+    "court-hearts-J": {
+      "file": "court-hearts-J.png",
+      "hash": "34e771b6cebcbc78",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "hearts",
+      "rank": "J",
+      "bytes": 2240091
+    },
+    "court-hearts-Q": {
+      "file": "court-hearts-Q.png",
+      "hash": "88127842cd3b8b76",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "hearts",
+      "rank": "Q",
+      "bytes": 2718605
+    },
+    "court-hearts-K": {
+      "file": "court-hearts-K.png",
+      "hash": "44784f0b97e50a27",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "hearts",
+      "rank": "K",
+      "bytes": 2452610
+    },
+    "court-diamonds-J": {
+      "file": "court-diamonds-J.png",
+      "hash": "d39bfed2322f137e",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "diamonds",
+      "rank": "J",
+      "bytes": 2308674
+    },
+    "court-diamonds-Q": {
+      "file": "court-diamonds-Q.png",
+      "hash": "e9e3bff82055a2da",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "diamonds",
+      "rank": "Q",
+      "bytes": 2293644
+    },
+    "court-diamonds-K": {
+      "file": "court-diamonds-K.png",
+      "hash": "533a9ff82119968d",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "diamonds",
+      "rank": "K",
+      "bytes": 2532304
+    },
+    "court-clubs-J": {
+      "file": "court-clubs-J.png",
+      "hash": "93bb7824c68c7829",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "clubs",
+      "rank": "J",
+      "bytes": 2614320
+    },
+    "court-clubs-Q": {
+      "file": "court-clubs-Q.png",
+      "hash": "c0c1637874f18de5",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "clubs",
+      "rank": "Q",
+      "bytes": 2808397
+    },
+    "court-clubs-K": {
+      "file": "court-clubs-K.png",
+      "hash": "683963c63f1f3bcc",
+      "kind": "court",
+      "size": "1024x1536",
+      "suit": "clubs",
+      "rank": "K",
+      "bytes": 2554714
+    },
+    "table-sunlit-felt": {
+      "file": "table-sunlit-felt.png",
+      "hash": "08ee913037857491",
+      "kind": "table",
+      "size": "1536x1024",
+      "suit": null,
+      "rank": null,
+      "bytes": 2343380
+    },
+    "back-sunburst-pop": {
+      "file": "back-sunburst-pop.png",
+      "hash": "008f0ea9c63ca92c",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2544703
+    },
+    "back-bubblegum-nebula": {
+      "file": "back-bubblegum-nebula.png",
+      "hash": "124045238f97d931",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2669956
+    },
+    "back-mint-crest": {
+      "file": "back-mint-crest.png",
+      "hash": "acd1445cc2dfb0e3",
+      "kind": "back",
+      "size": "1024x1536",
+      "suit": null,
+      "rank": null,
+      "bytes": 2705419
+    }
+  }
+}

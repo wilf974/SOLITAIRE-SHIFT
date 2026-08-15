@@ -1,0 +1,287 @@
+/* bright.css — the "Sunlit" look + the idle layer's UI.
+   Loaded AFTER ui.css so it wins where the two disagree. */
+
+/* ---------- shell ---------- */
+.topbar .brand {
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(31,41,72,0.18);
+  letter-spacing: 0.14em;
+}
+.topbar .brand small { color: rgba(255,255,255,0.75); }
+.hud .stat .v { color: #fff; text-shadow: 0 1px 2px rgba(31,41,72,0.25); }
+.hud .stat .k { color: rgba(255,255,255,0.72); }
+
+.iconbtn {
+  background: rgba(255,255,255,0.92);
+  border: none;
+  color: var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 3px 0 rgba(31,41,72,0.16), 0 6px 14px rgba(31,41,72,0.14);
+}
+.iconbtn:hover { background: #fff; color: var(--gold-deep); transform: translateY(-1px); }
+.iconbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(31,41,72,0.16); }
+
+/* the play surface: a bright mat floating on the sky */
+.slot {
+  background: rgba(255,255,255,0.16);
+  border: 2px dashed rgba(255,255,255,0.45);
+  box-shadow: inset 0 2px 10px rgba(31,41,72,0.10);
+}
+.slot.tableau { background: rgba(255,255,255,0.12); }
+.slot.foundation::before, .slot.stock::before, .slot.waste::before {
+  color: rgba(255,255,255,0.85);
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(31,41,72,0.20);
+}
+.slot.drop-ok {
+  border-color: #fff;
+  border-style: solid;
+  background: rgba(23,201,100,0.30);
+  box-shadow: 0 0 0 4px rgba(23,201,100,0.35), inset 0 0 20px rgba(255,255,255,0.35);
+}
+.slot.drop-bad { border-color: rgba(255,77,109,0.9); background: rgba(255,77,109,0.16); }
+
+.help-hint { color: rgba(255,255,255,0.85); text-shadow: 0 1px 3px rgba(31,41,72,0.30); }
+
+/* ---------- coin pill in the top bar ---------- */
+.coin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 6px 14px 6px 10px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(160deg, #fff2b8, #ffc93c);
+  color: #6b4300;
+  box-shadow: 0 3px 0 #d99b12, 0 8px 18px rgba(217,155,18,0.35);
+  transition: transform 0.12s var(--pop), box-shadow 0.12s;
+}
+.coin-pill:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #d99b12, 0 12px 22px rgba(217,155,18,0.4); }
+.coin-pill:active { transform: translateY(2px); box-shadow: 0 1px 0 #d99b12; }
+.coin-pill .ico { font-size: 20px; }
+.coin-pill .col { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
+.coin-pill .v { font-weight: 800; font-size: clamp(14px, 3vmin, 19px); font-variant-numeric: tabular-nums; }
+.coin-pill .k { font-size: 10px; font-weight: 700; opacity: 0.75; letter-spacing: 0.04em; }
+
+/* ---------- panels ---------- */
+.overlay { background: rgba(31,41,72,0.42); }
+.panel {
+  background: var(--panel);
+  border: none;
+  border-radius: 26px;
+  box-shadow: 0 24px 60px rgba(31,41,72,0.30), 0 0 0 4px rgba(255,255,255,0.6);
+  color: var(--ink);
+}
+.panel h2 {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.panel .sub { color: var(--ink-soft); letter-spacing: 0.08em; }
+.panel h3 { color: var(--ink); }
+.panel .note {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-top: 14px;
+  background: rgba(31,41,72,0.05);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+/* buttons */
+.btn {
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  padding: 12px 18px;
+  min-height: var(--tap);
+  cursor: pointer;
+  background: rgba(31,41,72,0.07);
+  color: var(--ink);
+  transition: transform 0.12s var(--pop), box-shadow 0.12s, background 0.15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(1px); }
+.btn.primary {
+  background: linear-gradient(160deg, #ffd76a, #ffb01f);
+  color: #6b4300;
+  box-shadow: 0 4px 0 #d99b12, 0 10px 22px rgba(217,155,18,0.35);
+}
+.btn.primary:active { box-shadow: 0 1px 0 #d99b12; }
+.btn.ghost { background: rgba(31,41,72,0.06); color: var(--ink-soft); }
+.btn.ghost:hover { background: rgba(31,41,72,0.11); color: var(--ink); }
+
+/* mode cards */
+.mode-card {
+  background: #fff;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 3px 0 rgba(31,41,72,0.10), 0 8px 20px rgba(31,41,72,0.10);
+  color: var(--ink);
+}
+.mode-card:hover {
+  transform: translateY(-4px);
+  background: #fff;
+  box-shadow: 0 6px 0 rgba(31,41,72,0.10), 0 14px 30px rgba(31,41,72,0.16);
+}
+.mode-card:disabled { opacity: 0.55; transform: none; cursor: default; }
+.mode-card .ico { font-size: clamp(22px, 5vmin, 32px); }
+.mode-card .t { font-weight: 800; font-size: clamp(15px, 3vmin, 18px); }
+.mode-card .d { color: var(--ink-soft); font-size: 12.5px; line-height: 1.4; }
+.mode-card .lock {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-deep);
+  background: rgba(255,201,60,0.20);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+/* ---------- the shop CTA on the menu ---------- */
+.shop-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: clamp(15px, 3.2vmin, 19px);
+  margin-bottom: 14px;
+}
+.shop-cta small {
+  font-weight: 700;
+  font-size: 12px;
+  background: rgba(107,67,0,0.14);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+/* ---------- coins ---------- */
+.coin-hero {
+  font-size: clamp(28px, 7vmin, 46px);
+  font-weight: 800;
+  color: var(--gold-deep);
+  letter-spacing: -0.02em;
+  margin: 6px 0 4px;
+  font-variant-numeric: tabular-nums;
+}
+.coin-hero span { -webkit-text-fill-color: initial; }
+
+/* offline earnings panel */
+.panel.offline { text-align: center; max-width: 420px; }
+.panel.offline .big { font-size: 54px; line-height: 1; margin-bottom: 6px; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* ---------- shop ---------- */
+.panel.shop { width: min(560px, 96vw); }
+.shop-hero {
+  text-align: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #fff6d6, #ffe9a8);
+  margin-bottom: 8px;
+}
+.shop-hero .rate { color: #8a6200; font-weight: 700; font-size: 13px; }
+
+.shop-list { display: flex; flex-direction: column; gap: 8px; }
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(31,41,72,0.09), 0 6px 14px rgba(31,41,72,0.08);
+  transition: transform 0.12s var(--pop), box-shadow 0.12s, opacity 0.15s;
+}
+.shop-item:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(31,41,72,0.09), 0 10px 22px rgba(31,41,72,0.14); }
+.shop-item:active:not(:disabled) { transform: translateY(1px); }
+.shop-item.poor { opacity: 0.5; cursor: default; }
+.shop-item .emoji { font-size: 30px; flex: none; width: 40px; text-align: center; }
+.shop-item .info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.shop-item .name { font-weight: 800; font-size: 15px; }
+.shop-item .name b { color: var(--gold-deep); }
+.shop-item .desc { color: var(--ink-soft); font-size: 12px; }
+.shop-item .rate { color: var(--good); font-size: 11.5px; font-weight: 700; }
+.shop-item .cost {
+  flex: none;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #6b4300;
+  background: linear-gradient(160deg, #fff2b8, #ffd76a);
+  padding: 8px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.shop-item.up .cost { background: linear-gradient(160deg, #d7f5ff, #a8e6ff); color: #04506b; }
+
+.owned-ups { display: flex; flex-wrap: wrap; gap: 6px; }
+.owned-up {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(23,201,100,0.15);
+  color: #0b7a3f;
+}
+
+/* ---------- victory ---------- */
+.panel.victory { text-align: center; }
+.panel.victory .title {
+  font-size: clamp(26px, 6vmin, 40px);
+  font-weight: 800;
+  color: var(--gold-deep);
+  letter-spacing: -0.02em;
+}
+.stats .row { border-bottom: 1px solid rgba(31,41,72,0.08); }
+.stats .k { color: var(--ink-soft); }
+.stats .v { color: var(--ink); font-weight: 700; }
+
+/* workbench / collection tiles */
+.wb-card, .coll-item {
+  background: #fff;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 2px 0 rgba(31,41,72,0.08), 0 6px 14px rgba(31,41,72,0.08);
+  color: var(--ink);
+}
+.wb-card .k { color: var(--ink-soft); }
+.wb-card .v { color: var(--ink); }
+
+#toast {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(31,41,72,0.3);
+}
+
+/* confetti falls in candy colours */
+@keyframes fall {
+  to { transform: translateY(105vh) rotate(760deg); opacity: 0; }
+}
+
+/* ---------- generated card-back art ----------
+   Declared here (last stylesheet) so nothing later resets background-size.
+   The art draws its own rounded frame inside a small outer margin, so it is
+   scaled slightly past the edges to crop that margin away. */
+.card .back.has-art {
+  background-size: 116% 116% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border: none;
+  overflow: hidden;
+}
+.card .back.has-art::before,
+.card .back.has-art::after { content: none; }
